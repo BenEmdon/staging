@@ -328,13 +328,13 @@ export async function animateWordmark(wordmark, reduced) {
 
 // The letter variant lights one letter at a time. Here the unit is
 // the word: BEN or EMDON. Hovering anywhere over a word fills the
-// whole word, its cells lighting in Bayer order across all its
-// letters at once, so the fill reads as one word coming up rather
-// than its letters racing. Leaving drains it in the same steps
-// reversed, and crossing from one word to the other drains the
-// first while the second fills. A cell is always painted, in the
-// page colour or the accent: the letterforms never open up, they
-// only change colour in place.
+// whole word, but each letter fills with its own pattern and its
+// own slight head start, so the word ripples up instead of marching
+// in one pattern. Leaving drains it in the same steps reversed, and
+// crossing from one word to the other drains the first while the
+// second fills. A cell is always painted, in the page colour or the
+// accent: the letterforms never open up, they only change colour
+// in place.
 
 // The Bayer 8x8 thresholds from dither.js, restated: a word's fill
 // order is the order these thresholds light a dither in, so the
@@ -392,10 +392,8 @@ function splitWordmarkCells(wordmark) {
 // a word is exactly one empty column and the gap between the two
 // words is five, so a break wider than one column is a word
 // boundary. No letter table and no word table: the split is read
-// off the art. Each word's cells are put in fill order once, across
-// the whole word: Bayer threshold first, a seeded jitter breaking
-// the ties so equal thresholds do not light as a regular lattice.
-// The drain walks the same order backwards.
+// off the art. The letters stay attached to their word, because
+// the fill schedule is built per letter.
 function groupWords(cells) {
   const byColumn = new Map();
   for (const cell of cells) {
@@ -413,6 +411,9 @@ function groupWords(cells) {
       letters.push({ minX: x, maxX: x, cells: [...byColumn.get(x)] });
     }
   }
+  letters.forEach((letter, index) => {
+    letter.index = index;
+  });
 
   const words = [];
   for (const letter of letters) {
@@ -420,26 +421,111 @@ function groupWords(cells) {
     if (last && letter.minX - last.maxX - 1 <= 1) {
       last.maxX = letter.maxX;
       last.cells.push(...letter.cells);
+      last.letters.push(letter);
     } else {
-      words.push({ minX: letter.minX, maxX: letter.maxX, cells: [...letter.cells] });
+      words.push({
+        minX: letter.minX,
+        maxX: letter.maxX,
+        cells: [...letter.cells],
+        letters: [letter],
+      });
     }
   }
 
-  words.forEach((word, index) => {
-    const rng = mulberry32(20261122 + index);
-    for (const cell of word.cells) cell.jitter = rng();
-    word.cells.sort(
-      (a, b) =>
-        BAYER_8[a.y % 8][a.x % 8] - BAYER_8[b.y % 8][b.x % 8] ||
-        a.jitter - b.jitter,
-    );
-    word.level = 0;
+  for (const word of words) {
+    word.schedule = buildSchedule(word);
+    word.ticks = word.schedule.length;
+    word.pos = 0;
     word.target = 0;
-    // A batch per tick, sized so a whole word lands in nine ticks,
-    // whichever of the two words it is.
-    word.batch = Math.max(1, Math.ceil(word.cells.length / 9));
-  });
+  }
   return words;
+}
+
+// Each letter fills with its own character, so a word coming up
+// does not march in one pattern. The pattern is chosen by the
+// letter's position in the name: the two Es share a family but run
+// in opposite directions, and the two Ns use unrelated patterns,
+// so no two letters move alike.
+const LETTER_PATTERNS = [
+  "bayer", // B: the dither
+  "rows-down", // E: a sweep off the top
+  "centre-out", // N: a bloom from the middle
+  "rows-up", // E again: the first E's family, reversed
+  "columns", // M: a sweep off the left
+  "diagonal", // D: a diagonal sweep
+  "edges-in", // O: the rim first, closing in
+  "clusters", // N again: 2x2 blocks, not a bloom
+];
+
+// The 2x2 Bayer thresholds, for the cluster letter: whole 2x2
+// blocks light together, in this order.
+const BAYER_2 = [
+  [0, 2],
+  [3, 1],
+];
+
+// How far one letter's fill spreads, in ticks, before the stagger.
+const LETTER_SPAN = 9;
+
+function patternScore(pattern, letter, cell) {
+  const lx = cell.x - letter.minX;
+  const ly = cell.y;
+  switch (pattern) {
+    case "bayer":
+      return BAYER_8[ly % 8][lx % 8];
+    case "rows-down":
+      return ly;
+    case "rows-up":
+      return -ly;
+    case "columns":
+      return lx;
+    case "diagonal":
+      return lx + ly;
+    case "centre-out": {
+      const dx = lx - (letter.maxX - letter.minX) / 2;
+      const dy = ly - 2;
+      return dx * dx + dy * dy;
+    }
+    case "edges-in": {
+      const dx = lx - (letter.maxX - letter.minX) / 2;
+      const dy = ly - 2;
+      return -(dx * dx + dy * dy);
+    }
+    default: // clusters
+      return BAYER_2[Math.floor(ly / 2) % 2][Math.floor(lx / 2) % 2];
+  }
+}
+
+// A word's schedule: schedule[t] is the set of cells that lights
+// on tick t of the fill. Each letter spreads its cells over
+// LETTER_SPAN ticks in its own pattern's order, roughened by a
+// seeded jitter, and starts a tick or two apart from its
+// neighbours, the stagger drawn from the same seeded generator.
+// The word ripples rather than marching, lands whole in about
+// eleven ticks, and shows the identical show on every hover:
+// nothing here reads Math.random. The drain walks the schedule
+// backwards, so each letter undoes its own pattern in reverse.
+function buildSchedule(word) {
+  const schedule = [];
+  for (const letter of word.letters) {
+    const rng = mulberry32((0x9e3779b9 ^ (letter.index * 7919 + 7)) >>> 0);
+    const offset = Math.floor(rng() * 3);
+    for (const cell of letter.cells) cell.jitter = rng();
+    const pattern = LETTER_PATTERNS[letter.index % LETTER_PATTERNS.length];
+    const scored = letter.cells.map((cell) => ({
+      cell,
+      score: patternScore(pattern, letter, cell),
+    }));
+    scored.sort((a, b) => a.score - b.score || a.cell.jitter - b.cell.jitter);
+    scored.forEach((entry, rank) => {
+      const tick =
+        offset +
+        Math.min(LETTER_SPAN - 1, Math.floor((rank / scored.length) * LETTER_SPAN));
+      (schedule[tick] ||= []).push(entry.cell);
+    });
+  }
+  for (let t = 0; t < schedule.length; t += 1) schedule[t] ||= [];
+  return schedule;
 }
 
 export async function animateWordmarkWords(wordmark, reduced) {
@@ -462,26 +548,27 @@ export async function animateWordmarkWords(wordmark, reduced) {
   new ResizeObserver(measure).observe(wordmark);
 
   // One ticker for both words: on each tick each word steps one
-  // batch toward its target, so a drain and the next fill overlap
-  // when the pointer crosses from one word to the other.
+  // tick of its schedule toward its target, so a drain and the
+  // next fill overlap when the pointer crosses from one word to
+  // the other. Targets are tick counts now, not cell counts: a
+  // word is full at word.ticks and empty at zero.
   let timer = 0;
   function stepWords() {
     let busy = false;
     for (const word of words) {
-      if (word.level === word.target) continue;
-      const next =
-        word.target > word.level
-          ? Math.min(word.target, word.level + word.batch)
-          : Math.max(word.target, word.level - word.batch);
-      for (
-        let i = Math.min(word.level, next);
-        i < Math.max(word.level, next);
-        i += 1
-      ) {
-        word.cells[i].el.classList.toggle("is-lit", i < next);
+      if (word.pos === word.target) continue;
+      if (word.target > word.pos) {
+        for (const cell of word.schedule[word.pos]) {
+          cell.el.classList.add("is-lit");
+        }
+        word.pos += 1;
+      } else {
+        word.pos -= 1;
+        for (const cell of word.schedule[word.pos]) {
+          cell.el.classList.remove("is-lit");
+        }
       }
-      word.level = next;
-      if (word.level !== word.target) busy = true;
+      if (word.pos !== word.target) busy = true;
     }
     if (!busy) {
       clearInterval(timer);
@@ -550,7 +637,7 @@ export async function animateWordmarkWords(wordmark, reduced) {
         stopSweep();
         return;
       }
-      setTarget(words[sweepIndex], words[sweepIndex].cells.length);
+      setTarget(words[sweepIndex], words[sweepIndex].ticks);
     }, TICK * 10);
   }
   const firstSweep = setTimeout(sweep, 1600);
@@ -569,7 +656,7 @@ export async function animateWordmarkWords(wordmark, reduced) {
         if (!word || word === hovered) return;
         if (hovered) setTarget(hovered, 0);
         hovered = word;
-        setTarget(hovered, hovered.cells.length);
+        setTarget(hovered, hovered.ticks);
       },
       { passive: true },
     );
@@ -595,7 +682,7 @@ export async function animateWordmarkWords(wordmark, reduced) {
       }
       if (latched) setTarget(latched, 0);
       latched = word;
-      setTarget(word, word.cells.length);
+      setTarget(word, word.ticks);
     });
   }
 
@@ -610,10 +697,12 @@ export async function animateWordmarkWords(wordmark, reduced) {
     // One cut back to the still wordmark, never steps.
     for (const word of words) {
       word.target = 0;
-      for (let i = 0; i < word.level; i += 1) {
-        word.cells[i].el.classList.remove("is-lit");
+      for (let t = 0; t < word.pos; t += 1) {
+        for (const cell of word.schedule[t]) {
+          cell.el.classList.remove("is-lit");
+        }
       }
-      word.level = 0;
+      word.pos = 0;
     }
     hovered = null;
     latched = null;
