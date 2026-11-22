@@ -18,8 +18,9 @@
   padding-inline: 1ch;
 }
 
-/* The badge links back to the staging index: same face, an underline
-   on hover as the only tell. */
+/* The badge links back to the staging index: same face, and no
+   underline on hover either (Ben's site rule, 2026-11-22: links
+   are never underlined). */
 .tag-link {
   color: inherit;
   text-decoration: none;
@@ -29,9 +30,6 @@
   background: none;
   color: inherit;
   text-decoration: none;
-}
-.tag-link:hover .tag {
-  text-decoration: underline;
 }
 
 /* ---------- masthead line ---------- */
