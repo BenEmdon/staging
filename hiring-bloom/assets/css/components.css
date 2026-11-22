@@ -8,10 +8,12 @@
   The hover bloom follows the site's pixel rule, with a pointer driving
   it: pixels never move and have no drift of their own. They sit on fixed
   grid positions behind the text and swap shade in place, in whole steps
-  on --step ticks, never fades. Where the pointer rests or creeps, cells
-  gather into Bayer-threshold clusters that grow stage by stage through
-  three solid shades; a fast pass scatters only a few single cells. The
-  walking itself lives in main.js.
+  on --step ticks, never fades. Where the pointer rests, creeps, or
+  travels, cells gather into Bayer-threshold clusters that grow stage by
+  stage through three solid shades, and a pixel lens flare rides the
+  pointer in brighter shades of the same families. In dark mode the
+  families turn to green crystal light. The walking itself lives in
+  main.js.
 */
 .hiring {
   position: relative;
@@ -22,6 +24,16 @@
   padding: var(--step);
   color: var(--page-color);
   text-decoration: none;
+
+  /* The crystal family, dark mode only: a greener blue, teal-green at
+     the core running to a deep green-blue at the edges, as if the
+     posting were etched in crystal and lit through it. The bloom and
+     flare shades below pick these up through light-dark(); light mode
+     keeps the site's blue family. */
+  --crystal-deep: #0a5c50;
+  --crystal-mid: #0fa38a;
+  --crystal-core: #2fe6b0;
+  --crystal-glint: #a4f7dc;
 }
 
 /* The base link hover would fill the whole block accent and invert the
@@ -78,10 +90,12 @@
    The shade is data: three solid steps mixed from the block's own ground
    toward the accent family, the fringe borrowing the lighter pulse
    colour and the core the accent itself, so the ramp drifts in hue as it
-   deepens. main.js positions these and sets data-level; nothing here
-   transitions or transforms, so a cell only ever swaps shade whole, in
-   place. Reduced motion is not hidden here: main.js draws one still
-   bloom for it and never ticks. */
+   deepens. Each shade is a light-dark() pair: light mode keeps the blue
+   family, dark mode turns the same three steps into crystal, deep
+   green-blue at the fringe to bright mint at the core. main.js positions
+   these and sets data-level; nothing here transitions or transforms, so
+   a cell only ever swaps shade whole, in place. Reduced motion is not
+   hidden here: main.js draws one still bloom for it and never ticks. */
 .hiring__bloom {
   position: absolute;
   z-index: 0;
@@ -91,15 +105,68 @@
 }
 
 .hiring__bloom[data-level="1"] {
-  background: color-mix(in srgb, var(--accent-pulse-color) 22%, var(--page-subtle));
+  background: light-dark(
+    color-mix(in srgb, var(--accent-pulse-color) 22%, var(--page-subtle)),
+    color-mix(in srgb, var(--crystal-deep) 55%, var(--page-subtle))
+  );
 }
 
 .hiring__bloom[data-level="2"] {
-  background: color-mix(in srgb, var(--accent-color) 34%, var(--page-subtle));
+  background: light-dark(
+    color-mix(in srgb, var(--accent-color) 34%, var(--page-subtle)),
+    color-mix(in srgb, var(--crystal-mid) 45%, var(--page-subtle))
+  );
 }
 
 .hiring__bloom[data-level="3"] {
-  background: color-mix(in srgb, var(--accent-color) 52%, var(--page-subtle));
+  background: light-dark(
+    color-mix(in srgb, var(--accent-color) 52%, var(--page-subtle)),
+    color-mix(in srgb, var(--crystal-core) 58%, var(--page-subtle))
+  );
+}
+
+/* A glint cell: one bloom cell burning at the brightest crystal shade.
+   main.js sets data-glint on a few edge cells at a time in dark mode
+   and moves the set as the pointer travels, so the crystal catches the
+   light in steps. The attribute outranks the level shades; the swap is
+   whole, in place, like every other cell here. */
+.hiring__bloom[data-glint="1"] {
+  background: light-dark(#bcd9f7, var(--crystal-glint));
+}
+
+/* One flare cell: the same full square on the same grid, carrying the
+   lens flare main.js draws around the pointer: core, streak, halo
+   rings, ghost. Its ramp sits brighter than the bloom's at every step,
+   the core near-solid light, and in dark mode it runs through the
+   crystal family to the pale glint shade. Hard edges only; nothing
+   here glows, blurs, transitions, or transforms. */
+.hiring__flare {
+  position: absolute;
+  z-index: 0;
+  inline-size: 8px;
+  block-size: 8px;
+  pointer-events: none;
+}
+
+.hiring__flare[data-level="1"] {
+  background: light-dark(
+    color-mix(in srgb, var(--accent-color) 42%, var(--page-subtle)),
+    color-mix(in srgb, var(--crystal-mid) 55%, var(--page-subtle))
+  );
+}
+
+.hiring__flare[data-level="2"] {
+  background: light-dark(
+    color-mix(in srgb, var(--accent-color) 66%, var(--page-subtle)),
+    color-mix(in srgb, var(--crystal-core) 68%, var(--page-subtle))
+  );
+}
+
+.hiring__flare[data-level="3"] {
+  background: light-dark(
+    color-mix(in srgb, var(--accent-pulse-color) 88%, var(--page-subtle)),
+    color-mix(in srgb, var(--crystal-glint) 90%, var(--page-subtle))
+  );
 }
 
 /*
