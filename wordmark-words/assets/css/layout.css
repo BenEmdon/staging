@@ -1,0 +1,665 @@
+.page {
+  width: min(100%, var(--content-width));
+  margin-inline: auto;
+}
+
+/* Every block below is spaced in whole --step units, so the page keeps one
+   vertical grid from the wordmark to the footer. */
+.page > * + * {
+  margin-block-start: var(--step);
+}
+
+/* ---------- masthead ---------- */
+
+/* Solid block-letter art, 75 columns x 5 rows, set in the accent colour: a
+   logo rather than a paragraph. Renders from the dedicated JetBrains Mono
+   glyph subset loaded in <head> (see the comment there), not a local system
+   font, so the exact glyph and advance width are guaranteed rather than
+   whatever happens to be installed. block-size is a whole --step multiple so
+   the baseline grid survives. */
+/* Neutral page-color, not the accent blue; the accent colour does its work
+   everywhere else on the page; the header doesn't need it too. No background:
+   it sits directly on the page like the rest of the type, just bigger. */
+.wordmark {
+  display: block;
+  block-size: calc(var(--step) * 2);
+  padding-block-start: 3px;
+  color: var(--page-color);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  font-size: min(9px, 1.9vw);
+  line-height: 1;
+  white-space: pre;
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
+}
+
+/* The wordmark paints in from the top on load, one band per step, like a
+   terminal drawing a frame. Class-gated rather than automatic: the block
+   glyphs load with display=block, so the art is invisible for the first
+   moment and an animation started at page load would finish before there was
+   anything to see. main.js waits for the font, then adds .is-booting, which
+   also means the wordmark is simply visible if the script never runs.
+
+   jump-start so the first row is already there on frame one; the default
+   (jump-end) opens on a blank frame and wastes a fifth of the run. */
+@keyframes wordmark-boot {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.wordmark.is-booting {
+  animation: wordmark-boot calc(var(--motion-step) * 6) steps(5, jump-start) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wordmark.is-booting {
+    animation: none;
+  }
+}
+
+/* Each character is one terminal cell. Animation changes a whole cell's
+   colour in place; cells never move or resize. Spaces get a gap span of
+   the same width, so every column in the grid is sized by the same rule.
+
+   The width is the measured advance of the block glyph itself, set from
+   JS as --wordmark-cell-w once the font is in (see wordmark.js). It used
+   to be 1ch, but ch is the advance of "0", a glyph the subset font does
+   not contain, so each engine resolved it through its own fallback and
+   the columns drifted by an amount the engine chose, differently from
+   the advance the glyphs and spaces were actually laid out with. The
+   0.6em default below is the subset's true advance, for the moments
+   before the measurement lands. */
+.wordmark__cell,
+.wordmark__gap {
+  display: inline-block;
+  width: var(--wordmark-cell-w, 0.6em);
+  white-space: pre;
+}
+
+/* The pool ladder: three solid shades between the resting ink and the
+   accent, interpolated within the site's own blue family so the name
+   stays one hue at every distance. Rung 3, the pool's core, is the
+   accent itself; rungs 2 and 1 step down toward the ink, two thirds
+   and one third of the way. wordmark.js assigns rungs by distance on
+   the tick; a cell only ever swaps whole colours in place. */
+.wordmark__cell.is-pool-1 {
+  color: light-dark(#142a4a, #bfd5ee);
+}
+
+.wordmark__cell.is-pool-2 {
+  color: light-dark(#194277, #95bee7);
+}
+
+.wordmark__cell.is-pool-3 {
+  color: var(--accent-color);
+}
+
+/* The word variant's lit cell: the accent, whole. wordmark.js
+   toggles .is-lit on the cells of the word being filled. */
+.wordmark__cell.is-lit {
+  color: var(--accent-color);
+}
+
+.tagline {
+  color: var(--muted-color);
+}
+
+/* ---------- section ---------- */
+
+/* The section you are reading gets an accent frame. Two sources feed it: a
+   pointer resting on the section, and, as described in main.js, the section crossing the
+   middle of the viewport as you scroll.
+
+   outline, not border: an outline is drawn outside the box and takes no
+   layout space, so switching it on cannot shift a single line off the --step
+   grid. --step-half of offset puts it midway between the section and the ░
+   rule above it, so the frame never collides with the divider. */
+.section {
+  outline: 1px solid transparent;
+  outline-offset: var(--step-half);
+  transition: outline-color calc(var(--motion-step) * 2) linear;
+  /* A keyed jump lands the heading here rather than flush against the top
+     edge, leaving room for the frame's own offset. */
+  scroll-margin-block-start: var(--step-2);
+}
+
+.section.is-active {
+  outline-color: var(--accent-color);
+}
+
+@media (hover: hover) {
+  .section:hover {
+    outline-color: var(--accent-color);
+  }
+
+  /* Both sources can be live at once: the pointer on one section while
+     another sits at the centre line, and two frames read as a bug. The
+     pointer is the more deliberate signal, so while it is over any section
+     the scroll-tracked frame stands down. */
+  .page:has(.section:hover) .section.is-active:not(:hover) {
+    outline-color: transparent;
+  }
+}
+
+.section__title {
+  color: var(--page-color);
+  margin-block-end: var(--step);
+}
+
+.section__title .prompt {
+  color: var(--accent-color);
+  user-select: none;
+}
+
+/* Hover-revealed heading anchor, opentui.com's own pattern (their
+   .prose .anchor rule): hidden until the heading is hovered or the link
+   itself is focused, so it doesn't clutter the reading view. Touch devices
+   have no hover to reveal it, so it stays visible there. */
+.anchor {
+  margin-inline-start: 0.75ch;
+  color: var(--accent-color);
+  text-decoration: none;
+  opacity: 0;
+}
+
+.section__title:hover .anchor,
+.anchor:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .anchor {
+    opacity: 1;
+  }
+}
+
+.section > p + p {
+  margin-block-start: var(--step);
+}
+
+/* ---------- divider ---------- */
+
+.divider {
+  color: var(--page-rule);
+  /* Body text is Iosevka now; ░ isn't in its charset, so this stays pinned to
+     the dedicated block-glyph subset loaded for the wordmark. */
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  white-space: pre;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ---------- identity ---------- */
+
+.id {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--step);
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.facts__row {
+  display: flex;
+  gap: var(--step-half);
+}
+
+.facts__key {
+  color: var(--muted-color);
+  flex: none;
+  width: 5.5rem;
+}
+
+.facts__value {
+  min-width: 0;
+}
+
+/* ---------- work ---------- */
+
+.entry {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  column-gap: var(--step-half);
+  align-items: start;
+}
+
+.entry + .entry {
+  margin-block-start: var(--step);
+}
+
+/* The visible range reads newest first. The single screen-reader phrase in
+   the markup keeps its spoken order chronological. */
+.entry__when {
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  color: var(--muted-color);
+}
+
+.entry__title,
+.entry__detail {
+  grid-column: 2;
+  min-width: 0;
+}
+
+.entry__detail {
+  color: var(--muted-color);
+  font-size: var(--text-small);
+  line-height: var(--step);
+}
+
+/* Output-style markers make dense experience notes easier to scan without
+   introducing a second visual language beside the terminal's prompts. */
+.entry__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entry__list li {
+  position: relative;
+  padding-inline-start: 2ch;
+}
+
+.entry__list li::before {
+  content: ">";
+  position: absolute;
+  inset-inline-start: 0;
+  color: var(--accent-color);
+}
+
+/* The interesting section's list is a direct child of its section, so
+   nothing else gives it the step every other block gets from its
+   predecessor; without this it sits flush on its intro line. The work
+   entries' lists live inside .entry, whose grid places them, and this
+   rule must not reach those. */
+.section > .entry__list {
+  margin-block-start: var(--step);
+}
+
+/* ---------- links ---------- */
+
+.links {
+  display: flex;
+  flex-direction: column;
+}
+
+.links a {
+  display: flex;
+  gap: var(--step-half);
+  width: fit-content;
+  max-width: 100%;
+  text-decoration: none;
+}
+
+.links a:hover .links__key,
+.links a:focus-visible .links__key,
+.links a:hover .links__value,
+.links a:focus-visible .links__value {
+  color: inherit;
+}
+
+/* Wide enough for "instagram" (9 columns) at every breakpoint. */
+.links__key {
+  color: var(--accent-color);
+  flex: none;
+  width: 6.5rem;
+}
+
+.links__value {
+  color: var(--muted-color);
+}
+
+/* ---------- footer ---------- */
+
+/* Everything sits left and the right end stays empty, because the key legend
+   is parked in that corner: pushed apart, the theme toggle ended up underneath
+   the panel whenever you opened it at the foot of the page. */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--step);
+  color: var(--muted-color);
+  font-size: var(--text-small);
+  line-height: var(--step);
+}
+
+/* The controls sit out the footer's baseline alignment. A picture has
+   no text baseline to align by, and on touch devices the ? keys button
+   is display:none, which leaves the scene as the controls' only item:
+   baseline alignment then seated the row by the picture's bottom edge
+   and it rode 8px high against the Ottawa text. Centring seats the
+   controls in the same step band as the text on every device. */
+.footer__controls {
+  display: flex;
+  align-self: center;
+  align-items: center;
+  gap: var(--step);
+}
+
+.footer__button {
+  color: var(--muted-color);
+  /* Controls are never underlined either (Ben's rule, 2026-11-22). */
+  text-decoration: none;
+}
+
+.footer__button:hover,
+.footer__button:focus-visible {
+  background: var(--accent-color);
+  color: var(--inverted-color);
+  text-decoration: none;
+}
+
+.footer__button kbd {
+  font: inherit;
+}
+
+/* The theme scene is the theme control (Ben's call, 2026-11-22): a
+   24x12 landscape at 2px cells, exactly one --step tall. It lives
+   twice on every page: in the masthead, anchored to the right edge
+   with its word on the left, and in the footer system line, where
+   the word sits on its right so the scene keeps its place there
+   too. One mode drives both, and clicking either advances the mode
+   in one whole step: no slide, no fade, the new state is simply
+   there. The word beside a scene is a tap's receipt, not a permanent
+   readout: a tap shows it on the control that was tapped, it stays
+   for about 2.5 seconds, then the control is the picture alone
+   again. There is no text theme toggle anywhere. */
+
+.theme-scene-control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--step-half);
+}
+
+.theme-scene-control--masthead {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+/* The masthead word sits on the scene's left, so the scene keeps the
+   right edge however long the active mode word is. */
+.theme-scene-control--masthead .theme-scene-button {
+  order: 2;
+}
+
+.theme-scene-control--masthead .theme-scene-current {
+  order: 1;
+}
+
+.theme-scene-current {
+  color: var(--muted-color);
+  line-height: var(--step);
+  white-space: nowrap;
+}
+
+.theme-scene-current[hidden] {
+  display: none;
+}
+
+.theme-scene-button {
+  display: block;
+  flex: none;
+  padding: 0;
+  line-height: 0;
+  /* Repeated taps cycle the theme; they are a rhythm, not a zoom.
+     Manipulation keeps the taps and drops the double-tap zoom,
+     without touching the viewport, so pinch zoom still works. */
+  touch-action: manipulation;
+}
+
+/* The ring hugs the picture, not the button box: on coarse pointers
+   the box is mostly invisible sizing (below), and a ring around it
+   would float in empty space. */
+.theme-scene-button:hover .theme-scene {
+  outline: 1px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+.theme-scene-button:focus-visible .theme-scene {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+.theme-scene {
+  display: block;
+  width: 48px;
+  height: 24px;
+  image-rendering: pixelated;
+  border: 1px solid var(--page-rule);
+}
+
+/* The tap target matches the footer text toggle this control replaced,
+   measured on the live site at phone width: 48 tall, and 50.58 wide in
+   its widest state (the word "system" at 14px Iosevka, over a 48px
+   floor). The box is sized to that measurement and cancelled by equal
+   negative margins, so the layout footprint stays the picture's own
+   48 by 24 and nothing around it moves. */
+@media (max-width: 34rem), (pointer: coarse) {
+  .theme-scene-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50.58px;
+    height: calc(var(--step) * 2);
+    margin: calc(var(--step) * -0.5) -1.29px;
+  }
+}
+
+/* A keyboard hint is noise on a device with no keyboard. */
+@media (hover: none) {
+  [data-keys-toggle] {
+    display: none;
+  }
+}
+
+/* Roomier wordmark once there is width for it. 77 columns at 12px caps out
+   around 554px, comfortably inside the 576px (36rem) content-width. */
+@media (min-width: 34rem) {
+  .wordmark {
+    font-size: 12px;
+    block-size: calc(var(--step) * 3);
+  }
+}
+
+/* ---------- mobile ---------- */
+
+@media (max-width: 34rem) {
+  :root {
+    --page-gutter: 1rem;
+  }
+
+  body {
+    padding-block: var(--step);
+  }
+
+  /* Side by side, the portrait leaves too little room for a value like
+     "Software Engineering Manager", so it moves above the facts. */
+  .id {
+    flex-direction: column;
+    /* Stacked, this gap is vertical, so it has to be a whole step. */
+    gap: var(--step);
+  }
+
+  .facts__key {
+    width: 5rem;
+  }
+
+  .entry {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+  }
+
+  .entry__detail {
+    grid-column: 1 / -1;
+    margin-block-start: var(--step);
+  }
+}
+
+/* Whole 48px rows keep touch targets comfortable and preserve the 24px grid. */
+@media (max-width: 34rem), (pointer: coarse) {
+  .links a {
+    min-height: calc(var(--step) * 2);
+    align-items: center;
+    width: 100%;
+  }
+
+  .links__value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .footer__button {
+    min-width: calc(var(--step) * 2);
+    min-height: calc(var(--step) * 2);
+  }
+
+  .section__title {
+    position: relative;
+    padding-inline-end: calc(var(--step) * 2);
+  }
+
+  .anchor {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: calc(-1 * var(--step-half));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--step) * 2);
+    height: calc(var(--step) * 2);
+    margin: 0;
+    opacity: 1;
+  }
+}
+
+/* ---------- interesting as a links table ---------- */
+
+/* The same step off the intro line that .section > .entry__list gets, and a
+   full step between entries: at several lines per entry, the elsewhere
+   table's flush stacking stops showing where one entry ends. */
+.links--posts {
+  margin-block-start: var(--step);
+  gap: var(--step);
+}
+
+/* The key column holds post titles here, not platform names, so it takes a
+   wider fixed measure than .links__key's 6.5rem; titles wrap inside it. */
+.links--posts .links__key {
+  width: 15rem;
+}
+
+/* The Code Mode pair: two titles share one description cell. The pair is a
+   div, not an anchor, because one row cannot hold two links. */
+.links__pair {
+  display: flex;
+  gap: var(--step-half);
+  max-width: 100%;
+}
+
+.links__key--pair {
+  display: flex;
+  flex-direction: column;
+  gap: var(--step-half);
+}
+
+.links__key--pair a {
+  text-decoration: none;
+  /* The coarse-pointer rule gives .links anchors a 48px floor; inside the
+     pair that floor reads as a blank line between the two titles. */
+  min-height: 0;
+}
+
+/* At phone width the two columns stop fitting side by side: 15rem of title
+   would leave roughly eleven characters for the description. Stack each
+   row instead, title over description, both at full measure. */
+@media (max-width: 34rem) {
+  .links--posts a,
+  .links__pair {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .links--posts .links__key {
+    width: auto;
+  }
+
+  .links__key--pair {
+    gap: 0;
+  }
+}
+
+/* ---------- page nav ---------- */
+
+/* One quiet row of page links, used twice on every page: under the
+   masthead scene control, and above the footer as its own element,
+   so the status line is the last thing on the page. The footer
+   system line keeps its own markup and spacing; the bottom row
+   never sits inside it. Plain inline flow, so a fourth destination
+   later simply extends the row. */
+.pagenav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--step);
+  font-size: var(--text-small);
+  line-height: var(--step);
+}
+
+.pagenav a {
+  color: var(--muted-color);
+  text-decoration: none;
+  /* A 48px hit area around a one-step line: the padding reaches into
+     the step of space on either side, so the row itself stays one
+     step tall and nothing on the grid moves. The quarter-step inline
+     padding, cancelled by its margins the same way, gives the filled
+     state room around the label on every side; the label itself does
+     not move. (Ben's phone check, 2026-11-22: the fill hugged the
+     words edge to edge.) */
+  padding-block: calc(var(--step) / 2);
+  margin-block: calc(var(--step) / -2);
+  padding-inline: calc(var(--step) / 4);
+  margin-inline: calc(var(--step) / -4);
+}
+
+.pagenav a:hover,
+.pagenav a:focus-visible,
+.pagenav a:active {
+  /* The filled state follows the footer button rule (.footer__button
+     in this file, and the base link rule in base.css): the accent
+     fill with the text flipped to the inverted colour. Accent text
+     on the accent fill would vanish. */
+  background: var(--accent-color);
+  color: var(--inverted-color);
+  text-decoration: none;
+}
+
+.pagenav a[aria-current="page"] {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.pagenav a[aria-current="page"]::before {
+  content: "> ";
+}
+
+.pagenav a[aria-current="page"]:hover,
+.pagenav a[aria-current="page"]:focus-visible,
+.pagenav a[aria-current="page"]:active {
+  /* The marker rule above ties this rule on specificity and sits
+     later in the file, so on the current page's own link it would
+     win the colour and the label would sit accent on accent. The
+     filled state is the button rule, on every link. */
+  background: var(--accent-color);
+  color: var(--inverted-color);
+}
