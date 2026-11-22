@@ -18,6 +18,22 @@
   padding-inline: 1ch;
 }
 
+/* The badge links back to the staging index: same face, an underline
+   on hover as the only tell. */
+.tag-link {
+  color: inherit;
+  text-decoration: none;
+}
+.tag-link:hover,
+.tag-link:focus-visible {
+  background: none;
+  color: inherit;
+  text-decoration: none;
+}
+.tag-link:hover .tag {
+  text-decoration: underline;
+}
+
 /* ---------- masthead line ---------- */
 
 .blog-nav {

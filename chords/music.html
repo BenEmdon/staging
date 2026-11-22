@@ -69,6 +69,19 @@
         font-size: var(--text-caption);
         line-height: var(--step);
       }
+      .tag-link {
+        color: inherit;
+        text-decoration: none;
+      }
+      .tag-link:hover,
+      .tag-link:focus-visible {
+        background: none;
+        color: inherit;
+        text-decoration: none;
+      }
+      .tag-link:hover .tag {
+        text-decoration: underline;
+      }
     </style>
   </head>
 
@@ -91,7 +104,7 @@
     </div>
 
     <main class="page">
-      <p><span class="tag">experiment</span></p>
+      <p><a class="tag-link" href="/staging/"><span class="tag">experiment</span></a></p>
       <header>
                 <h1>
           <span class="sr-only">Music maker</span>

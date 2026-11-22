@@ -680,3 +680,12 @@
     min-height: calc(var(--step) * 2);
   }
 }
+
+/* The staged preview banner links back to the staging index: same
+   face, an underline on hover as the only tell. */
+.preview-badge:hover,
+.preview-badge:focus-visible {
+  background: none;
+  color: inherit;
+  text-decoration: underline;
+}
