@@ -1,0 +1,535 @@
+/*
+  Hiring callout near the top of the page. The whole block is one link, not
+  a .section, so it does not shift the numbered key jumps for the existing
+  sections. The accent border and subtle background set it apart without
+  leaving the site's terminal language. Padding is a whole --step so its
+  text stays on the same vertical grid.
+
+  The hover sparkle follows the site's pixel rule, with a pointer driving
+  it: pixels never move and have no drift of their own. They sit on fixed
+  grid positions and light in place around the pointer, behind the text.
+  How wide an area lights, and how many steps it stays lit, follows the
+  pointer's speed, so a slow pass makes a tight sparkle and a fast pass
+  leaves a longer trail of lit neighbours. A cell is lit or it is not;
+  decay runs in --step ticks, not fades. The walking itself lives in
+  main.js.
+*/
+.hiring {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--accent-color);
+  background: var(--page-subtle);
+  padding: var(--step);
+  color: var(--page-color);
+  text-decoration: none;
+}
+
+/* The base link hover would fill the whole block accent and invert the
+   text. The block keeps its own colours; the sparkle is the hover effect. */
+.hiring:hover,
+.hiring:focus-visible {
+  background: var(--page-subtle);
+  color: var(--page-color);
+  text-decoration: none;
+  animation: hiring-border-pulse 1.2s linear infinite;
+}
+
+.hiring > * + * {
+  margin-block-start: var(--step-half);
+}
+
+/* Keep the copy above the pointer sparkle. The pixels are texture behind
+   the words, never a layer competing with them. */
+.hiring > p {
+  position: relative;
+  z-index: 1;
+}
+
+.hiring__label {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+/* Border pulse on hover or focus: the block's actual 1px border changes
+   shade in two hard steps. There are no separate pixel rails and nothing
+   grows or moves; the perimeter itself brightens, holds, and returns. */
+@keyframes hiring-border-pulse {
+  0%,
+  49% {
+    border-color: var(--accent-color);
+  }
+
+  50%,
+  100% {
+    border-color: var(--accent-pulse-color);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hiring:hover,
+  .hiring:focus-visible {
+    animation: none;
+  }
+}
+
+/* One sparkle cell: a 4px square on the block's fixed 8px grid. The
+   grid pitch is twice the cell size, so neighbouring lit cells stay
+   separate sparkles instead of merging into a solid band. Its z-index
+   keeps it behind the copy. main.js positions these and toggles .is-lit;
+   nothing here transitions or transforms, so a cell only ever snaps on
+   or off in place. */
+.hiring__pixel {
+  position: absolute;
+  z-index: 0;
+  inline-size: 4px;
+  block-size: 4px;
+  background: var(--accent-color);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hiring__pixel.is-lit {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hiring__pixel {
+    display: none;
+  }
+}
+
+/*
+  The portrait ships dithered and resolves to the real photograph on hover;
+  the dither is a cover, not the picture. Touch devices get the same reveal by
+  tapping.
+
+  The reveal itself lives in main.js, not here: it clears cells out of the
+  dither in a scrambled order so the picture comes apart in blocks. There is no
+  opacity involved, which is why this file no longer has a transition on it.
+*/
+.dither {
+  position: relative;
+  flex: none;
+  width: 9rem; /* 6 × --step, so the portrait sits on the text grid */
+  aspect-ratio: 1;
+  overflow: hidden;
+  /* Also the dither's paper colour: JS reads it back resolved, which sidesteps
+     parsing light-dark() out of a custom property. */
+  background: var(--dither-paper);
+  border: 1px solid var(--page-rule);
+  display: block;
+  padding: 0;
+}
+
+.dither__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.dither__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  color: var(--dither-ink); /* read back resolved by dither.js */
+}
+
+.dither:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+@media (max-width: 34rem) {
+  .dither {
+    width: 6rem; /* 4 × --step */
+  }
+}
+
+/*
+  Experiment: the pixel meadow above the footer. A picture, not UI. It
+  carries two palettes, day and night, over one geometry: meadow.js
+  re-lights the same scene to follow the resolved theme, the way the
+  portrait re-dithers when the theme moves under it. The frame is the
+  page rule, the same border the portrait uses. The canvas is 144 x 60
+  cells scaled to the column width, so at full width each cell is 4px
+  and the block stands 240px tall, a whole number of --step rows.
+  image-rendering: pixelated keeps the scaling on whole cells; meadow.js
+  does all the stepping, so there is no transition or animation here.
+*/
+.meadow {
+  border: 1px solid var(--page-rule);
+}
+
+.meadow__canvas {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+/* The meadow's credit line: small and muted, in the caption voice, tucked
+   half a step under the frame it belongs to instead of the full --step the
+   page gives every other block. */
+.meadow__cap {
+  margin-block-start: var(--step-half);
+  color: var(--muted-color);
+  font-size: var(--text-caption);
+}
+
+/*
+  The clock's colon and any boot-time pending output blink as a hard terminal
+  step, not a fade. The colon only dims because at 0 the footer spends half of
+  every second reading "09 19", which looks like a typo rather than a clock.
+*/
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: var(--blink-off, 0);
+  }
+}
+
+/* Local time where he is, not where the reader is; the line already says
+   Ottawa, so the clock is the rest of that sentence. */
+.clock {
+  margin-inline-start: 2ch;
+}
+
+.clock__tick {
+  --blink-off: 0.45;
+  animation: blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clock__tick {
+    animation: none;
+  }
+}
+
+/*
+  The key legend, opened with ? and from the footer. Parked in the corner
+  rather than centred over the page: it is a reference card, not a dialog, and
+  nothing behind it needs to be dismissed to keep reading.
+*/
+.keys {
+  position: fixed;
+  z-index: 10;
+  inset-block-end: var(--step);
+  inset-inline-end: var(--step);
+  padding: var(--step-half) var(--step);
+  background: var(--page-background);
+  border: 1px solid var(--accent-color);
+  font-size: var(--text-small);
+  line-height: var(--step);
+}
+
+.keys[hidden] {
+  display: none;
+}
+
+.keys__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.keys__list li {
+  display: flex;
+  gap: var(--step);
+}
+
+.keys kbd {
+  flex: none;
+  width: 2ch;
+  color: var(--accent-color);
+  font: inherit;
+}
+
+.keys__label {
+  color: var(--muted-color);
+}
+
+/* Experiment: pixel keycaps. keycaps.js builds a canvas inside each kbd
+   and adds .has-caps to the panel; only then does the drawn cap take over
+   visually. The kbd text stays in the DOM for screen readers (font-size: 0
+   is a visual hand-off, not a removal), and without JS the panel never
+   unhides anyway, so the legend can never end up textless. */
+.keys.has-caps .keys__list li {
+  align-items: center;
+}
+
+.keys.has-caps kbd {
+  width: auto;
+  font-size: 0;
+  /* The canvas is a block, so the kbd text would otherwise keep its own
+     24px line box underneath it and double every row's height. */
+  line-height: 0;
+}
+
+.keys.has-caps kbd canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+/* Nothing here can be pressed on a touch device. */
+@media (hover: none) {
+  .keys {
+    display: none;
+  }
+}
+
+/*
+  The boot screen, borrowed wholesale from git-merge.com's own page load: a
+  short startup log that resolves line by line, each line when the work it
+  names actually finishes, and then gets out of the way.
+
+  It covers the page rather than replacing it, so the real content is in the
+  DOM and laid out the whole time. The padding below deliberately repeats
+  body's, and .boot__inner repeats .page's width and centring, so the wordmark
+  sits on exactly the pixel it will occupy once this is gone, lifting the
+  overlay is a cut, not a jump.
+*/
+.boot {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  padding: var(--step-2) var(--page-gutter);
+  background: var(--page-background);
+  overflow: hidden;
+}
+
+.boot[hidden] {
+  display: none;
+}
+
+.boot__inner {
+  width: min(100%, var(--content-width));
+  margin-inline: auto;
+}
+
+/* The log gets a neighbour: a small spruce that builds beside it while the
+   lines resolve. The tree's colours are light-dark() pairs off the accent
+   family, the same trick the tokens use, so the mark follows the theme the
+   boot is busy restoring. Deep is the one new hex pair: the accent pushed
+   darker and cooler, the way a shade ramp shifts hue as it darkens. */
+.boot__row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--step);
+  margin-block-start: var(--step);
+}
+
+.boot__tree {
+  --tree-lit: light-dark(#6ea8e1, #a9cdf2);
+  --tree-mid: light-dark(#1e5aa8, #6ea8e1);
+  --tree-deep: light-dark(#173f73, #2c5d94);
+  --tree-trunk: light-dark(#52637c, #33415a);
+  position: relative;
+  flex: none;
+  width: 66px;
+  height: 78px;
+}
+
+/* Cells are placed once, fully coloured, and never move or fade: the build
+   is the set of cells present, growing by whole clusters per tick. */
+.boot__pix {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+}
+
+.boot__pix.is-lit {
+  background: var(--tree-lit);
+}
+
+.boot__pix.is-mid {
+  background: var(--tree-mid);
+}
+
+.boot__pix.is-deep {
+  background: var(--tree-deep);
+}
+
+.boot__pix.is-trunk {
+  background: var(--tree-trunk);
+}
+
+.boot__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.boot__log {
+  color: var(--muted-color);
+  font-size: var(--text-small);
+  /* Absolute, like everywhere else, so the log sits on the same 24px grid the
+     page behind it does. */
+  line-height: var(--step);
+}
+
+/* Progress as a row of pixel cells, the palette strip's own pattern: 4px
+   squares on an 8px pitch. A cell is either the track colour or the accent;
+   filling is a whole-cell swap on the tick, never a width sliding up. */
+.boot__progress {
+  position: relative;
+  height: 4px;
+  margin-block-start: var(--step-half);
+}
+
+.boot__pcell {
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 4px;
+  background: var(--page-rule);
+}
+
+.boot__pcell.is-on {
+  background: var(--accent-color);
+}
+
+/* Fixed columns rather than padded strings. Iosevka draws ✓ at two columns
+   while its monospace advance is one, so a run of lines marked with a mix of
+   ✓ and a one-column spinner would not line up if the mark were just text in
+   the flow. Given the mark its own box, the glyph inside can be any width. */
+.boot__line {
+  display: flex;
+}
+
+.boot__mark {
+  flex: none;
+  width: 3ch;
+  color: var(--accent-color);
+}
+
+.boot__task {
+  flex: none;
+}
+
+/* The leader is one long run of dots that simply overflows. Sized by flex and
+   clipped, it fills whatever gap is left on any width, and collapses to
+   nothing on a narrow screen instead of wrapping the line. */
+.boot__dots {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--page-rule);
+}
+
+.boot__value {
+  flex: none;
+  width: 24ch;
+  color: var(--page-color);
+}
+
+/* Still waiting: an underscore doing what a cursor does. */
+.boot__value.is-pending {
+  animation: blink 1s step-end infinite;
+}
+
+@media (max-width: 34rem) {
+  .boot {
+    padding-block: var(--step) var(--step-2);
+  }
+
+  /* Nothing like enough width for a 24-column value column beside a task and
+     a leader; let the value take what it needs and the dots take the rest. */
+  .boot__value {
+    width: auto;
+  }
+}
+
+/* Narrow screens have nothing like room for a 24-column value beside a task
+   and a leader, so a boot line is allowed to wrap. */
+@media (max-width: 34rem) {
+  .boot__line {
+    flex-wrap: wrap;
+  }
+
+  .boot__value {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* The home page music demo: Saria's Song as one piano roll with a
+   play button. The button wears the music maker's own button style
+   (music.css .music-btn), restated here so this page does not have
+   to load the maker's stylesheet. The roll is a pixel grid like the
+   theme scene beside the footer toggle: fixed cells, pixelated. */
+.music-demo__roll {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  border: 1px solid var(--page-rule);
+  background: var(--page-subtle);
+}
+
+.music-demo__row {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--step) / 2);
+  /* One whole step below the roll, on the same rhythm as the
+     demo block's own margins. */
+  margin-top: var(--step);
+}
+
+.music-demo__button {
+  font: inherit;
+  font-size: var(--text-small);
+  line-height: var(--step);
+  padding: 0 calc(var(--step) / 2);
+  background: var(--page-subtle);
+  color: var(--page-color);
+  border: 1px solid var(--page-rule);
+  cursor: pointer;
+  /* Play and restart get tapped in time with the music; keep
+     the taps, drop the double-tap zoom. */
+  touch-action: manipulation;
+}
+
+.music-demo__button:hover,
+.music-demo__button:focus-visible {
+  background: var(--accent-color);
+  color: var(--inverted-color);
+  border-color: var(--accent-color);
+}
+
+.music-demo__button[aria-pressed="true"] {
+  background: var(--accent-color);
+  color: var(--inverted-color);
+  border-color: var(--accent-color);
+}
+
+.music-demo__button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.music-demo__status {
+  font-size: var(--text-small);
+  color: var(--muted-color);
+}
+
+/* The demo is a block like any other on the page: a whole step clear
+   of the song name above it and the link line below, not flush
+   against either. */
+.music-demo {
+  margin-block: var(--step);
+}
+
+/* Touch targets on the same terms as the music maker's own buttons
+   and the footer buttons: two whole steps tall on coarse pointers. */
+@media (max-width: 34rem), (pointer: coarse) {
+  .music-demo__button {
+    min-height: calc(var(--step) * 2);
+  }
+}
