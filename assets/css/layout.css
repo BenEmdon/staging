@@ -314,8 +314,15 @@
   line-height: var(--step);
 }
 
+/* The controls sit out the footer's baseline alignment. A picture has
+   no text baseline to align by, and on touch devices the ? keys button
+   is display:none, which leaves the scene as the controls' only item:
+   baseline alignment then seated the row by the picture's bottom edge
+   and it rode 8px high against the Ottawa text. Centring seats the
+   controls in the same step band as the text on every device. */
 .footer__controls {
   display: flex;
+  align-self: center;
   align-items: center;
   gap: var(--step);
 }
@@ -338,14 +345,16 @@
 }
 
 /* The theme scene is the theme control (Ben's call, 2026-11-22): a
-   24x12 landscape at 2px cells, exactly one --step tall. It sits in the
-   masthead of every page, anchored to the right edge with its word on
-   the left, so the scene itself never moves. Clicking it advances the
-   mode in one whole step: no slide, no fade, the new state is simply
-   there. The word beside it is a tap's receipt, not a permanent
-   readout: a tap shows it, it stays for about 2.5 seconds, then the
-   control is the picture alone again. The footer text toggle it
-   replaced is gone. */
+   24x12 landscape at 2px cells, exactly one --step tall. It lives
+   twice on every page: in the masthead, anchored to the right edge
+   with its word on the left, and in the footer system line, where
+   the word sits on its right so the scene keeps its place there
+   too. One mode drives both, and clicking either advances the mode
+   in one whole step: no slide, no fade, the new state is simply
+   there. The word beside a scene is a tap's receipt, not a permanent
+   readout: a tap shows it on the control that was tapped, it stays
+   for about 2.5 seconds, then the control is the picture alone
+   again. There is no text theme toggle anywhere. */
 
 .theme-scene-control {
   display: inline-flex;
@@ -569,4 +578,68 @@
   .links__key--pair {
     gap: 0;
   }
+}
+
+/* ---------- page nav ---------- */
+
+/* One quiet row of page links, used twice on every page: under the
+   masthead scene control, and above the footer as its own element,
+   so the status line is the last thing on the page. The footer
+   system line keeps its own markup and spacing; the bottom row
+   never sits inside it. Plain inline flow, so a fourth destination
+   later simply extends the row. */
+.pagenav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--step);
+  font-size: var(--text-small);
+  line-height: var(--step);
+}
+
+.pagenav a {
+  color: var(--muted-color);
+  text-decoration: none;
+  /* A 48px hit area around a one-step line: the padding reaches into
+     the step of space on either side, so the row itself stays one
+     step tall and nothing on the grid moves. The quarter-step inline
+     padding, cancelled by its margins the same way, gives the filled
+     state room around the label on every side; the label itself does
+     not move. (Ben's phone check, 2026-11-22: the fill hugged the
+     words edge to edge.) */
+  padding-block: calc(var(--step) / 2);
+  margin-block: calc(var(--step) / -2);
+  padding-inline: calc(var(--step) / 4);
+  margin-inline: calc(var(--step) / -4);
+}
+
+.pagenav a:hover,
+.pagenav a:focus-visible,
+.pagenav a:active {
+  /* The filled state follows the footer button rule (.footer__button
+     in this file, and the base link rule in base.css): the accent
+     fill with the text flipped to the inverted colour. Accent text
+     on the accent fill would vanish. */
+  background: var(--accent-color);
+  color: var(--inverted-color);
+  text-decoration: none;
+}
+
+.pagenav a[aria-current="page"] {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.pagenav a[aria-current="page"]::before {
+  content: "> ";
+}
+
+.pagenav a[aria-current="page"]:hover,
+.pagenav a[aria-current="page"]:focus-visible,
+.pagenav a[aria-current="page"]:active {
+  /* The marker rule above ties this rule on specificity and sits
+     later in the file, so on the current page's own link it would
+     win the colour and the label would sit accent on accent. The
+     filled state is the button rule, on every link. */
+  background: var(--accent-color);
+  color: var(--inverted-color);
 }
