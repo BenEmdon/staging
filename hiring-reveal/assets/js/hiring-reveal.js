@@ -4,11 +4,26 @@
   The hiring block carries a tiny meadow in its base margin: a field
   strip, a hazed hill, and the meadow tower with its lamp, drawn on a
   fixed grid of cells. At rest the strip is a quiet flat field of the
-  block's own background shade. When the pointer enters the block the
-  scene assembles cell by cell in a seeded Bayer order, the way the
-  portrait reveal works, biased so the build sweeps loosely from the
-  edge the pointer entered at. Leaving drains it in reverse order.
-  While the pointer stays, the tower lamp blinks on its slow beat.
+  block's own background shade. When a trigger takes hold the scene
+  assembles cell by cell in a seeded Bayer order, the way the portrait
+  reveal works, biased so the build sweeps loosely from the side the
+  trigger came in at. When no trigger holds it, the scene drains in
+  reverse order. While it stands, the tower lamp blinks on its slow
+  beat.
+
+  Three triggers, one assembled state, drained only when none hold:
+
+  - Pointer proximity: the build starts while the pointer is still
+    NEAR px away from the block, so the scene is well under way as
+    the pointer arrives, and hovering inside holds it. Leaving the
+    neighbourhood lets go.
+  - Scroll: the block crossing the site's focus line, the zero-height
+    band a third down the viewport the section highlight uses,
+    assembles it; leaving the band lets go. This is every input's
+    trigger, touch included: scrolling the posting to the line is
+    enough, no tap needed.
+  - Keyboard focus assembles too, and blur lets go, so the effect is
+    not pointer-only.
 
   The pixel rule holds throughout: cells sit on a fixed grid and light
   in place in discrete steps on the site's 75ms tick. Nothing drifts,
@@ -16,16 +31,20 @@
   a strip under the text, in its own reserved space, so the block's
   layout never moves.
 
-  Touch has no hover, so the scene assembles once when the block
-  scrolls into view and stands. Reduced motion gets the assembled
-  scene in one cut, no stepping. Keyboard focus assembles too, and
-  blur drains, so the effect is not pointer-only.
+  Reduced motion gets the assembled scene in one cut, no stepping.
 */
 
 const W = 120;
 const H = 13;
 const TICK = 75;
-const BATCH = 26;
+// 598 cells at 60 a tick: ten ticks, about 750ms for a full build.
+// The first build ran 26 a tick, 23 ticks, about 1.7s; Ben asked for
+// a quicker reveal, and the proximity trigger below starts it before
+// the pointer even arrives.
+const BATCH = 60;
+// Pointer proximity, in CSS pixels from the block's edge: inside
+// this distance the scene starts assembling.
+const NEAR = 96;
 
 const BAYER = [
   [0, 8, 2, 10],
@@ -216,6 +235,7 @@ if (canvas && block) {
   }
 
   function build(originCol) {
+    if (shown.size === 0) ticks = 0; // a fresh build restarts the lamp's beat
     target = 1;
     if (reduced.matches) {
       shown = new Set(cells);
@@ -255,45 +275,73 @@ if (canvas && block) {
     run();
   }
 
-  function originFromEvent(event) {
+  function originFromPoint(clientX) {
     const rect = block.getBoundingClientRect();
-    const ratio = (event.clientX - rect.left) / rect.width;
+    const ratio = (clientX - rect.left) / rect.width;
     return Math.max(0, Math.min(W - 1, Math.floor(ratio * W)));
   }
 
-  if (hoverable.matches) {
-    block.addEventListener("pointerenter", (event) => {
-      if (event.pointerType === "touch") return;
-      ticks = 0;
-      build(originFromEvent(event));
-      // While the pointer stays, the lamp needs its beat even after
-      // the build finishes, so the tick keeps running at rest.
-      run();
-    });
-    block.addEventListener("pointerleave", (event) => {
-      if (event.pointerType === "touch") return;
+  // One assembled state, three holds. Any hold takes it up; the last
+  // hold letting go drains it. Triggers never build twice or fight:
+  // they only set and clear their own flag, and sync() reconciles.
+  const holds = { pointer: false, scroll: false, focus: false };
+  let lastPointerX = null;
+
+  function sync() {
+    if (holds.pointer || holds.scroll || holds.focus) {
+      if (target !== 1) {
+        build(
+          holds.pointer && lastPointerX !== null
+            ? originFromPoint(lastPointerX)
+            : Math.floor(W / 2)
+        );
+        // While a hold stands, the lamp needs its beat even after
+        // the build finishes, so the tick keeps running at rest.
+        run();
+      }
+    } else if (target !== 0) {
       drain();
-    });
-    block.addEventListener("focus", () => {
-      ticks = 0;
-      build(Math.floor(W / 2));
-      run();
-    });
-    block.addEventListener("blur", drain);
-  } else {
-    // Touch: assemble once when the block arrives on screen, and
-    // stand. The block is a link, so no tap is ever intercepted.
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          build(Math.floor(W / 2));
-          io.disconnect();
-        }
-      },
-      { threshold: 0.4 }
-    );
-    io.observe(block);
+    }
   }
+
+  function setHold(name, on) {
+    if (holds[name] === on) return;
+    holds[name] = on;
+    sync();
+  }
+
+  if (hoverable.matches) {
+    // Pointer proximity: track the pointer anywhere in the window
+    // and hold while it is within NEAR px of the block's edge, so
+    // the build starts before the pointer arrives and hovering
+    // inside is simply the closest case of near.
+    window.addEventListener("pointermove", (event) => {
+      if (event.pointerType === "touch") return;
+      lastPointerX = event.clientX;
+      const rect = block.getBoundingClientRect();
+      const dx = Math.max(rect.left - event.clientX, 0, event.clientX - rect.right);
+      const dy = Math.max(rect.top - event.clientY, 0, event.clientY - rect.bottom);
+      setHold("pointer", Math.hypot(dx, dy) <= NEAR);
+    });
+    // The pointer leaving the window entirely lets go too.
+    document.addEventListener("pointerleave", () => setHold("pointer", false));
+    block.addEventListener("focus", () => setHold("focus", true));
+    block.addEventListener("blur", () => setHold("focus", false));
+  }
+
+  // Scroll: the block straddling the site's focus line holds the
+  // scene up, on every input. The root is inset to the same
+  // zero-height band a third down the viewport that main.js uses
+  // for the section highlight, so the posting assembles exactly
+  // when it reaches the line a reader's eye is on, and drains when
+  // it scrolls past or back.
+  const focusLine = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) setHold("scroll", entry.isIntersecting);
+    },
+    { rootMargin: "-33.333% 0px -66.667% 0px" }
+  );
+  focusLine.observe(block);
 
   // Repaint under a theme change, keeping whatever is lit lit.
   new MutationObserver(() => {
