@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Ben Emdon</title>
+    <meta
+      name="description"
+      content="Ben Emdon. Making software development faster and safer at Stripe. Previously GitHub."
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Ben Emdon" />
+    <meta
+      property="og:description"
+      content="Making software development faster and safer at Stripe. Previously GitHub."
+    />
+    <meta property="og:url" content="https://benemdon.github.io" />
+    <meta property="og:image" content="https://benemdon.github.io/assets/img/og-card.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Ben Emdon beside a dithered portrait, with source control, code review, and developer productivity listed below"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://benemdon.github.io/assets/img/og-card.jpg" />
+    <meta
+      name="twitter:image:alt"
+      content="Ben Emdon beside a dithered portrait, with source control, code review, and developer productivity listed below"
+    />
+
+    <link rel="canonical" href="https://benemdon.github.io" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180" />
+
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#090d16" />
+
+    <!-- The shared chrome (assets/js/chrome.js): one definition of
+         the pieces every page carries. The pre-paint theme read and
+         the GoatCounter config run from its head; the boot screen,
+         both nav rows, the scene controls, the footer, and the keys
+         panel are rendered from it below. A plain script, not a
+         module: it has to be loaded before the body parses. -->
+    <script src="assets/js/chrome.js?v=20261122b"></script>
+
+    <!-- Body/UI text: Iosevka, the same base typeface opentui.com's own
+         "OpenTUI Mono" is a custom build of (confirmed via their public
+         build plan: packages/web/src/font/private-build-plans.toml in their
+         GitHub repo). That exact build isn't published, so this uses stock
+         Iosevka rather than hotlinking their brand asset: same family, same
+         terminal character, openly licensed (SIL OFL). Self-hosted: the
+         @font-face rules live in assets/css/fonts.css and the files in
+         assets/fonts, licences beside them. -->
+    <link rel="stylesheet" href="assets/css/fonts.css" />
+
+    <link rel="stylesheet" href="assets/css/tokens.css?v=20261114" />
+    <link rel="stylesheet" href="assets/css/base.css?v=20261122h" />
+    <link rel="stylesheet" href="assets/css/layout.css?v=20261122-pool" />
+    <link rel="stylesheet" href="assets/css/components.css?v=20261122-bloom3" />
+
+    <!-- Visit counting: GoatCounter; the config lives in chrome.js. -->
+    <script
+      data-goatcounter="https://benemdon.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+  </head>
+
+  <body>
+    <!-- The boot screen, rendered by the shared chrome. -->
+    <script>window.SiteChrome && SiteChrome.boot()</script>
+
+    <main class="page">
+      <p><a class="tag-link" href="/staging/"><span class="tag">experiment</span></a></p>
+      <header>
+        <h1>
+          <span class="sr-only">Ben Emdon</span>
+          <pre class="wordmark" aria-hidden="true">██████  ███████ ███    ██     ███████ ███    ███ ██████   ██████  ███    ██
+██   ██ ██      ████   ██     ██      ████  ████ ██   ██ ██    ██ ████   ██
+██████  █████   ██ ██  ██     █████   ██ ████ ██ ██   ██ ██    ██ ██ ██  ██
+██   ██ ██      ██  ██ ██     ██      ██  ██  ██ ██   ██ ██    ██ ██  ██ ██
+██████  ███████ ██   ████     ███████ ██      ██ ██████   ██████  ██   ████</pre>
+        </h1>
+      </header>
+
+      <p class="tagline">
+        Making software development faster and safer at Stripe. Previously GitHub.
+      </p>
+
+      <script>window.SiteChrome && SiteChrome.sceneControl(true)</script>
+
+      <!-- The page nav: one shared component (chrome.js), this row
+           and the one above the footer, on every page. -->
+      <script>window.SiteChrome && SiteChrome.nav("top")</script>
+
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <a
+        class="hiring"
+        data-hiring
+        href="https://stripe.com/careers/listing/staff-software-engineer-code-forge/8293644"
+      >
+        <p class="hiring__label"><span aria-hidden="true">&gt;</span> I&rsquo;m hiring</p>
+        <p>
+          <strong>Staff Software Engineer, Code Forge</strong> at Stripe. We build
+          the source control systems that store Stripe&rsquo;s code and its
+          history, serving engineers, AI agents, and CI jobs.
+        </p>
+        <p>Office or remote. Strong senior engineers welcome too.</p>
+      </a>
+
+      <section class="section">
+        <h2 class="section__title" id="whoami"><span class="prompt" aria-hidden="true">$</span> whoami<a class="anchor" href="#whoami" aria-label="Link to this section">#</a></h2>
+        <div class="id">
+          <button class="dither" type="button" data-dither aria-label="Show the undithered photo">
+            <img
+              class="dither__photo"
+              src="assets/img/ben.jpg"
+              crossorigin="anonymous"
+              decoding="async"
+              alt="Ben Emdon"
+              width="400"
+              height="400"
+            />
+            <canvas class="dither__canvas" data-dither-canvas aria-hidden="true"></canvas>
+          </button>
+          <div class="facts">
+            <p class="facts__row">
+              <span class="facts__key">role</span>
+              <span class="facts__value">Engineering manager</span>
+            </p>
+            <p class="facts__row">
+              <span class="facts__key">team</span>
+              <span class="facts__value">Code Forge, Code Review</span>
+            </p>
+            <p class="facts__row">
+              <span class="facts__key">org</span>
+              <span class="facts__value"><a href="https://stripe.com">Stripe</a></span>
+            </p>
+            <p class="facts__row">
+              <span class="facts__key">where</span>
+              <span class="facts__value">Ottawa, ON, Canada</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <section class="section">
+        <h2 class="section__title" id="about"><span class="prompt" aria-hidden="true">$</span> about<a class="anchor" href="#about" aria-label="Link to this section">#</a></h2>
+        <p>
+          I am interested in the systems between writing code and safely shipping it. I like
+          making large codebases feel fast, understandable, and easy to change.
+        </p>
+        <p>
+          At Stripe, I lead Code Forge and Code Review. We build source control infrastructure
+          for Stripe's massive, fast-moving Git monorepo and improve the code review process,
+          including an AI reviewer designed to catch problems before production and approve changes in a high compliance environment. Before Stripe, I was at GitHub.
+        </p>
+        <p class="muted">
+          Technical interests: version control systems, blob-storage-backed database design,
+          agent harness development, developer productivity, and "hill climbing".
+        </p>
+        <p class="muted">
+          Otherwise: racquet sports like badminton and pickleball, strategy games like Magic: The Gathering and Twilight Imperium, pixel art and old video games,
+          exploring cities near and far, and going max effort at karaoke.
+        </p>
+      </section>
+
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <section class="section">
+        <h2 class="section__title" id="interesting"><span class="prompt" aria-hidden="true">$</span> interesting<a class="anchor" href="#interesting" aria-label="Link to this section">#</a></h2>
+        <p class="muted">Posts I have read and found interesting lately.</p>
+        <nav class="links links--posts" aria-label="Interesting posts">
+          <a href="https://claude.com/resources/webinars/how-the-claude-code-team-does-code-review">
+            <span class="links__key">How the Claude Code team does code review</span>
+            <span class="links__value">How Anthropic reviews agent-written code, with machines doing most of the reading.</span>
+          </a>
+          <a href="https://www.anthropic.com/engineering/redesigning-source-control">
+            <span class="links__key">Redesigning source control at Anthropic</span>
+            <span class="links__value">Scion, the in-house version control system Anthropic built to replace git.</span>
+          </a>
+          <a href="https://openai.com/index/scaling-git-at-openai/">
+            <span class="links__key">Scaling Git at OpenAI</span>
+            <span class="links__value">Pando, the Git backend OpenAI built for parallel pushes and fast reads.</span>
+          </a>
+          <a href="https://claude.dev/blog/automating-eval-design-and-hillclimbing/">
+            <span class="links__key">Automating eval design and hillclimbing with Claude</span>
+            <span class="links__value">Principles for eval design, and hillclimbing an app against its eval with Claude Code.</span>
+          </a>
+          <div class="links__pair" role="group" aria-label="Two posts about Code Mode">
+            <span class="links__key links__key--pair">
+              <a href="https://developers.cloudflare.com/agents/tools/codemode/how-it-works/">How Code Mode works</a>
+              <a href="https://code.claude.com/docs/en/code-mode">Run tool calls from code with Code Mode</a>
+            </span>
+            <span class="links__value">Both are about Code Mode, where the model writes code that calls tools instead of calling them one at a time: Cloudflare's explainer, and the Claude Code docs.</span>
+          </div>
+        </nav>
+      </section>
+
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+
+      <section class="section">
+        <h2 class="section__title" id="music"><span class="prompt" aria-hidden="true">$</span> music<a class="anchor" href="#music" aria-label="Link to this section">#</a></h2>
+        <p>Saria's Song · The Legend of Zelda: Ocarina of Time</p>
+        <div class="music-demo">
+          <canvas
+            class="music-demo__roll"
+            data-music-demo-roll
+            width="192"
+            height="150"
+            role="img"
+            aria-label="Piano roll of Saria's Song: four channels of notes, the ocarina line on top, shown in a window that follows the song as it plays"
+          ></canvas>
+          <p class="music-demo__row">
+            <button class="music-demo__button" type="button" data-music-demo-play aria-pressed="false">play</button>
+            <button class="music-demo__button" type="button" data-music-demo-restart>restart</button>
+            <span class="music-demo__status" data-music-demo-status aria-live="polite"></span>
+          </p>
+        </div>
+        <p class="muted"><a class="music-demo__full-link" href="music.html">full music maker</a></p>
+      </section>
+
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <section class="section">
+        <h2 class="section__title" id="work"><span class="prompt" aria-hidden="true">$</span> work<a class="anchor" href="#work" aria-label="Link to this section">#</a></h2>
+
+        <div class="entry">
+          <p class="entry__when">
+            <span class="sr-only">2025 to now</span>
+            <span aria-hidden="true">now</span>
+            <span aria-hidden="true">2025</span>
+          </p>
+          <p class="entry__title">Stripe: Engineering manager</p>
+          <ul class="entry__detail entry__list">
+            <li>Manage 11 direct reports and 3 cross-appointed engineers across Code Forge and Code Review.</li>
+            <li>Lead engineering strategy in partnership with technical leaders across Stripe's Git monorepo infrastructure, code review process, and AI code reviewer.</li>
+            <li>Coordinated 15+ infrastructure teams to move Stripe's BFCM code freeze from global to opt-out by service; now helping make it opt-in.</li>
+          </ul>
+        </div>
+
+        <div class="entry">
+          <p class="entry__when">
+            <span class="sr-only">2022 to 2025</span>
+            <span aria-hidden="true">2025</span>
+            <span aria-hidden="true">2022</span>
+          </p>
+          <p class="entry__title">Stripe: Software engineer</p>
+          <ul class="entry__detail entry__list">
+            <li>Launched stacked pull request tooling so engineers work on dependent changes without blocking on review.</li>
+            <li>Built an auto-merge system that cut time-to-production by over an hour per pull request company-wide.</li>
+            <li>Built centralized ownership infrastructure for code, service, and feature-flag ownership across every platform team.</li>
+          </ul>
+        </div>
+
+        <div class="entry">
+          <p class="entry__when">
+            <span class="sr-only">2018 to 2022</span>
+            <span aria-hidden="true">2022</span>
+            <span aria-hidden="true">2018</span>
+          </p>
+          <p class="entry__title">GitHub: Software engineer</p>
+          <ul class="entry__detail entry__list">
+            <li>Shipped the <a href="https://github.blog/changelog/2021-10-27-command-palette-beta/">command palette</a>, slash commands, and <a href="https://github.blog/changelog/2021-06-23-issues-forms-beta-for-public-repositories/">issue forms</a>; worked on <a href="https://github.blog/enterprise-software/devops/improving-how-we-deploy-github/">how GitHub deploys itself</a>.</li>
+            <li>Maintained the Checks, Commit Statuses, and Deployment Statuses APIs, the most write heavy APIs at the time.</li>
+            <li>Lead maintainer of the open source project <a href="https://github.com/github-education-resources/classroom">GitHub Classroom</a>.</li>
+          </ul>
+        </div>
+
+        <div class="entry">
+          <p class="entry__when">
+            <span class="sr-only">2016 to 2017</span>
+            <span aria-hidden="true">2017</span>
+            <span aria-hidden="true">2016</span>
+          </p>
+          <p class="entry__title">Shopify: Software engineer intern</p>
+          <ul class="entry__detail entry__list">
+            <li>On the iOS team, helped kickstart the Shopify mobile app before its initial launch, including the dashboard users see when they open it.</li>
+            <li>On the Graph team, helped kickstart Shopify's first GraphQL API.</li>
+            <li><a href="https://shopify.engineering/intern-blog-post#:~:text=Ben%20wrote%20the%20initial%20dashboard%C2%A0on%20the%20Shopify%20home%C2%A0graph%C2%A0for%20the%20iOS%20mobile%20app%C2%A0">Written up by Shopify Engineering</a>.</li>
+          </ul>
+        </div>
+
+        <div class="entry">
+          <p class="entry__when">
+            <span class="sr-only">2015 to 2020</span>
+            <span aria-hidden="true">2020</span>
+            <span aria-hidden="true">2015</span>
+          </p>
+          <p class="entry__title">Carleton University: B.C.S. (Honours), Distinction</p>
+          <ul class="entry__detail entry__list">
+            <li>Honours thesis on GraphQL vs. REST, published by IEEE.</li>
+            <li>Apple WWDC Scholar, 2017 and 2018.</li>
+          </ul>
+        </div>
+
+      </section>
+
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <section class="section">
+        <h2 class="section__title" id="elsewhere"><span class="prompt" aria-hidden="true">$</span> elsewhere<a class="anchor" href="#elsewhere" aria-label="Link to this section">#</a></h2>
+        <nav class="links" aria-label="Social profiles">
+          <a href="https://x.com/BenEmdon" rel="me">
+            <span class="links__key">x</span>
+            <span class="links__value">@BenEmdon</span>
+          </a>
+          <a href="https://www.linkedin.com/in/benemdon" rel="me">
+            <span class="links__key">linkedin</span>
+            <span class="links__value">in/benemdon</span>
+          </a>
+          <a href="https://www.instagram.com/ben.emdon/" rel="me">
+            <span class="links__key">instagram</span>
+            <span class="links__value">@ben.emdon</span>
+          </a>
+          <a href="https://github.com/BenEmdon" rel="me">
+            <span class="links__key">github</span>
+            <span class="links__value">@BenEmdon</span>
+          </a>
+        </nav>
+      </section>
+
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <!-- Experiment: a quiet pixel meadow, drawn in code by meadow.js.
+           Not a section, so the numbered key jumps do not move. It sits
+           above the footer as a closing vista; without JS the canvas
+           simply stays blank and the page loses nothing. -->
+      <figure
+        class="meadow"
+        data-meadow
+        role="img"
+        aria-label="A pixel-art meadow: one tree on a grass field under a big sky, with a hazy far ridge and a tiny distant tower whose light glows after dark, nearer hills, clouds, and a fence."
+      >
+        <canvas class="meadow__canvas" data-meadow-canvas width="144" height="60" aria-hidden="true"></canvas>
+      </figure>
+
+      <!-- The artist's signature for the meadow. A paragraph under the
+           figure rather than a figcaption inside it: the figure carries
+           role="img", which would swallow the text into the image's
+           label. -->
+      <p class="meadow__cap">
+        by Mochi
+      </p>
+
+      <script>window.SiteChrome && SiteChrome.nav("bottom")</script>
+      <script>window.SiteChrome && SiteChrome.footer()</script>
+    </main>
+
+    <script>window.SiteChrome && SiteChrome.keys([["1","whoami"],["2","about"],["3","interesting"],["4","music"],["5","work"],["6","elsewhere"]])</script>
+
+    <script type="module" src="assets/js/main.js?v=20261122-bloom3"></script>
+    <script type="module" src="assets/js/meadow.js"></script>
+    <script type="module" src="assets/js/keycaps.js"></script>
+    <script type="module" src="assets/js/music-demo.js?v=20261122s"></script>
+  </body>
+</html>
