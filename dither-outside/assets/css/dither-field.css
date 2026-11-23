@@ -1,0 +1,180 @@
+/*
+  Experiment (staging only): the home page on a dither field.
+
+  Loaded by index.html after components.css, and by no other page.
+  The composition: one fixed canvas (the field) behind everything,
+  and the content as solid islands floating on it. The islands carry
+  the page's own surfaces, so text never sits on dither; the field
+  shows only in the surround and the gaps. The column is gone: on a
+  wide screen the islands sit in a twelve-column grid at varied
+  offsets, composed for the field rather than stacked in a line.
+*/
+
+/* The field's ink: the page ink by default, named separately so a
+   verifier can repaint the field in a marker colour. */
+:root {
+  --field-ink: var(--page-color);
+}
+
+/* The paper lives on the root; the body and the page wrapper go
+   transparent so the field canvas is the ground everywhere. */
+html {
+  background: var(--page-background);
+}
+
+body {
+  background: transparent;
+}
+
+.field {
+  position: fixed;
+  inset: 0;
+  inline-size: 100vw;
+  block-size: 100vh;
+  z-index: 0;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.page--field {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 76rem);
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+  padding-block-start: var(--step);
+  padding-block-end: var(--step-2);
+}
+
+/* The grid replaces the stacked column's margin rhythm. */
+.page--field > * + * {
+  margin-block-start: 0;
+}
+
+.island {
+  background: var(--page-background);
+  border: 1px solid var(--page-rule);
+  padding: var(--step);
+}
+
+.island--subtle {
+  background: var(--page-subtle);
+}
+
+/* Islands that are links or controls keep the site's own treatments;
+   the island surface is underneath them, not instead of them. */
+.island--nav {
+  padding-block: var(--step-half);
+}
+
+.pagenav {
+  display: flex;
+  gap: var(--step);
+}
+
+/* ---------- masthead island: the orb with the name ---------- */
+
+.island--masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--step);
+}
+
+.orb {
+  inline-size: 168px;
+  block-size: 168px;
+  flex: none;
+  image-rendering: pixelated;
+}
+
+.masthead__name {
+  min-inline-size: 0;
+}
+
+.masthead__name .tagline {
+  margin-block-start: var(--step-half);
+}
+
+.island--masthead .theme-scene-control {
+  margin-inline-start: auto;
+}
+
+/* ---------- the grid of islands ---------- */
+
+@media (min-width: 60rem) {
+  .page--field {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: var(--step);
+    row-gap: var(--step-2);
+    align-items: start;
+  }
+
+  .page--field > * {
+    grid-column: 1 / -1;
+  }
+
+  .page--field > .island--hiring {
+    grid-column: 2 / 12;
+  }
+
+  .page--field > .island--whoami {
+    grid-column: 1 / 8;
+  }
+
+  .page--field > .island--about {
+    grid-column: 5 / 13;
+  }
+
+  .page--field > .island--interesting {
+    grid-column: 1 / 9;
+  }
+
+  .page--field > .island--music {
+    grid-column: 4 / 13;
+  }
+
+  .page--field > .island--work {
+    grid-column: 2 / 12;
+  }
+
+  .page--field > .island--elsewhere {
+    grid-column: 1 / 7;
+  }
+
+  .page--field > .island--meadow {
+    grid-column: 6 / 13;
+  }
+}
+
+@media (max-width: 59.99rem) {
+  .page--field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--step-2);
+  }
+}
+
+/* The meadow figure keeps its own frame inside its island. */
+.island--meadow .meadow {
+  border: none;
+}
+
+/* On a narrow screen the island's padding leaves the wordmark less
+   room than the open column gave it, and its fixed glyph count
+   would clip the last letter. Shrink the mark a step so the whole
+   name fits inside the island. */
+@media (max-width: 34rem) {
+  .island--masthead {
+    padding: var(--step-half);
+  }
+
+  .page--field .wordmark {
+    font-size: 1.72vw;
+  }
+}
+
+.island--meadow .meadow__cap {
+  margin-block-start: var(--step-half);
+}
