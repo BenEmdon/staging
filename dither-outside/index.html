@@ -48,16 +48,23 @@
          module: it has to be loaded before the body parses. -->
     <script src="assets/js/chrome.js?v=20261122b"></script>
 
-    <!-- Body/UI text: Iosevka, self-hosted; the @font-face rules live
-         in assets/css/fonts.css and the files in assets/fonts. -->
+    <!-- Body/UI text: Iosevka, the same base typeface opentui.com's own
+         "OpenTUI Mono" is a custom build of (confirmed via their public
+         build plan: packages/web/src/font/private-build-plans.toml in their
+         GitHub repo). That exact build isn't published, so this uses stock
+         Iosevka rather than hotlinking their brand asset: same family, same
+         terminal character, openly licensed (SIL OFL). Self-hosted: the
+         @font-face rules live in assets/css/fonts.css and the files in
+         assets/fonts, licences beside them. -->
     <link rel="stylesheet" href="assets/css/fonts.css" />
 
     <link rel="stylesheet" href="assets/css/tokens.css?v=20261114" />
     <link rel="stylesheet" href="assets/css/base.css?v=20261122h" />
     <link rel="stylesheet" href="assets/css/layout.css?v=20261122-lamp" />
-    <link rel="stylesheet" href="assets/css/components.css?v=20261122p" />
-    <!-- Experiment: the dither field composition for this page. -->
-    <link rel="stylesheet" href="assets/css/dither-field.css?v=20261122-outside" />
+    <link rel="stylesheet" href="assets/css/components.css?v=20261122-bloomwide" />
+    <!-- Experiment (dither-outside-v2): the background dither field's
+         ramp and ground rules. Home page only. -->
+    <link rel="stylesheet" href="assets/css/bg-dither.css?v=20261122-dov2" />
 
     <!-- Visit counting: GoatCounter; the config lives in chrome.js. -->
     <script
@@ -71,48 +78,33 @@
     <!-- The boot screen, rendered by the shared chrome. -->
     <script>window.SiteChrome && SiteChrome.boot()</script>
 
-    <!-- The field: one continuous ambient dither ground for the
-         whole page, drawn by dither-field.js on the 8px grid. The
-         content below floats on it as solid islands; the field is
-         never under text. -->
-    <canvas class="field" data-field aria-hidden="true"></canvas>
-
-    <main class="page page--field">
+    <main class="page">
       <p><a class="tag-link" href="/staging/"><span class="tag">experiment</span></a></p>
-      <!-- The masthead island: the orb, this page's dithered mark,
-           shaded purely by dither density in the same system as the
-           field, placed with the name. -->
-      <header class="island island--masthead">
-        <canvas
-          class="orb"
-          data-orb
-          width="21"
-          height="21"
-          role="img"
-          aria-label="A sphere shaded entirely by dither density: dense at the base, thinning to a sparse bright cap at the crown"
-        ></canvas>
-        <div class="masthead__name">
-          <h1>
-            <span class="sr-only">Ben Emdon</span>
-            <pre class="wordmark" aria-hidden="true">██████  ███████ ███    ██     ███████ ███    ███ ██████   ██████  ███    ██
+      <header>
+        <h1>
+          <span class="sr-only">Ben Emdon</span>
+          <pre class="wordmark" aria-hidden="true">██████  ███████ ███    ██     ███████ ███    ███ ██████   ██████  ███    ██
 ██   ██ ██      ████   ██     ██      ████  ████ ██   ██ ██    ██ ████   ██
 ██████  █████   ██ ██  ██     █████   ██ ████ ██ ██   ██ ██    ██ ██ ██  ██
 ██   ██ ██      ██  ██ ██     ██      ██  ██  ██ ██   ██ ██    ██ ██  ██ ██
 ██████  ███████ ██   ████     ███████ ██      ██ ██████   ██████  ██   ████</pre>
-          </h1>
-          <p class="tagline">
-            Making software development faster and safer at Stripe. Previously GitHub.
-          </p>
-        </div>
-        <script>window.SiteChrome && SiteChrome.sceneControl(true)</script>
+        </h1>
       </header>
 
-      <div class="island island--nav">
-        <script>window.SiteChrome && SiteChrome.nav("top")</script>
-      </div>
+      <p class="tagline">
+        Making software development faster and safer at Stripe. Previously GitHub.
+      </p>
+
+      <script>window.SiteChrome && SiteChrome.sceneControl(true)</script>
+
+      <!-- The page nav: one shared component (chrome.js), this row
+           and the one above the footer, on every page. -->
+      <script>window.SiteChrome && SiteChrome.nav("top")</script>
+
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
 
       <a
-        class="hiring island island--hiring"
+        class="hiring"
         data-hiring
         href="https://stripe.com/careers/listing/staff-software-engineer-code-forge/8293644"
       >
@@ -125,7 +117,7 @@
         <p>Office or remote. Strong senior engineers welcome too.</p>
       </a>
 
-      <section class="section island island--whoami">
+      <section class="section">
         <h2 class="section__title" id="whoami"><span class="prompt" aria-hidden="true">$</span> whoami<a class="anchor" href="#whoami" aria-label="Link to this section">#</a></h2>
         <div class="id">
           <button class="dither" type="button" data-dither aria-label="Show the undithered photo">
@@ -161,7 +153,9 @@
         </div>
       </section>
 
-      <section class="section island island--about">
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <section class="section">
         <h2 class="section__title" id="about"><span class="prompt" aria-hidden="true">$</span> about<a class="anchor" href="#about" aria-label="Link to this section">#</a></h2>
         <p>
           I am interested in the systems between writing code and safely shipping it. I like
@@ -182,7 +176,9 @@
         </p>
       </section>
 
-      <section class="section island island--interesting">
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <section class="section">
         <h2 class="section__title" id="interesting"><span class="prompt" aria-hidden="true">$</span> interesting<a class="anchor" href="#interesting" aria-label="Link to this section">#</a></h2>
         <p class="muted">Posts I have read and found interesting lately.</p>
         <nav class="links links--posts" aria-label="Interesting posts">
@@ -212,7 +208,10 @@
         </nav>
       </section>
 
-      <section class="section island island--music">
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+
+      <section class="section">
         <h2 class="section__title" id="music"><span class="prompt" aria-hidden="true">$</span> music<a class="anchor" href="#music" aria-label="Link to this section">#</a></h2>
         <p>Saria's Song · The Legend of Zelda: Ocarina of Time</p>
         <div class="music-demo">
@@ -233,7 +232,9 @@
         <p class="muted"><a class="music-demo__full-link" href="music.html">full music maker</a></p>
       </section>
 
-      <section class="section island island--work">
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <section class="section">
         <h2 class="section__title" id="work"><span class="prompt" aria-hidden="true">$</span> work<a class="anchor" href="#work" aria-label="Link to this section">#</a></h2>
 
         <div class="entry">
@@ -307,7 +308,9 @@
 
       </section>
 
-      <section class="section island island--elsewhere">
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <section class="section">
         <h2 class="section__title" id="elsewhere"><span class="prompt" aria-hidden="true">$</span> elsewhere<a class="anchor" href="#elsewhere" aria-label="Link to this section">#</a></h2>
         <nav class="links" aria-label="Social profiles">
           <a href="https://x.com/BenEmdon" rel="me">
@@ -329,33 +332,39 @@
         </nav>
       </section>
 
-      <!-- The meadow as a closing island on the field. -->
-      <div class="island island--meadow">
-        <figure
-          class="meadow"
-          data-meadow
-          role="img"
-          aria-label="A pixel-art meadow: one tree on a grass field under a big sky, with a hazy far ridge and a tiny distant tower whose light glows after dark, nearer hills, clouds, and a fence."
-        >
-          <canvas class="meadow__canvas" data-meadow-canvas width="144" height="60" aria-hidden="true"></canvas>
-        </figure>
-        <p class="meadow__cap">
-          by Mochi
-        </p>
-      </div>
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
 
-      <div class="island island--nav">
-        <script>window.SiteChrome && SiteChrome.nav("bottom")</script>
-        <script>window.SiteChrome && SiteChrome.footer()</script>
-      </div>
+      <!-- Experiment: a quiet pixel meadow, drawn in code by meadow.js.
+           Not a section, so the numbered key jumps do not move. It sits
+           above the footer as a closing vista; without JS the canvas
+           simply stays blank and the page loses nothing. -->
+      <figure
+        class="meadow"
+        data-meadow
+        role="img"
+        aria-label="A pixel-art meadow: one tree on a grass field under a big sky, with a hazy far ridge and a tiny distant tower whose light glows after dark, nearer hills, clouds, and a fence."
+      >
+        <canvas class="meadow__canvas" data-meadow-canvas width="144" height="60" aria-hidden="true"></canvas>
+      </figure>
+
+      <!-- The artist's signature for the meadow. A paragraph under the
+           figure rather than a figcaption inside it: the figure carries
+           role="img", which would swallow the text into the image's
+           label. -->
+      <p class="meadow__cap">
+        by Mochi
+      </p>
+
+      <script>window.SiteChrome && SiteChrome.nav("bottom")</script>
+      <script>window.SiteChrome && SiteChrome.footer()</script>
     </main>
 
     <script>window.SiteChrome && SiteChrome.keys([["1","whoami"],["2","about"],["3","interesting"],["4","music"],["5","work"],["6","elsewhere"]])</script>
 
-    <script type="module" src="assets/js/main.js?v=20261122s"></script>
+    <script type="module" src="assets/js/main.js?v=20261122-bloomwide"></script>
+    <script type="module" src="assets/js/bg-dither.js"></script>
     <script type="module" src="assets/js/meadow.js"></script>
     <script type="module" src="assets/js/keycaps.js"></script>
     <script type="module" src="assets/js/music-demo.js?v=20261122s"></script>
-    <script type="module" src="assets/js/dither-field.js?v=20261122-outside"></script>
   </body>
 </html>

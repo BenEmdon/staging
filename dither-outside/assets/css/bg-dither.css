@@ -1,0 +1,45 @@
+/*
+  Experiment (dither-outside-v2): a whisper of ordered dither in the
+  page background, drawn in the theme's own blues.
+
+  Ben's redirect on v1 (2026-11-22): the structure of the page stays
+  exactly as production; the only experiment is the background. The
+  dither is not black and white: it runs in shades of blue, pale to
+  the accent in light mode, deep to the accent in dark mode. And it
+  is a tiny bit only, stirring in response to scrolling or pointer
+  movement, still when they stop.
+
+  The ramp: four solid rungs between the page ground and the accent.
+  --bgd-4 is the accent itself in both themes, so the strongest cell
+  the field can light is a colour the page already speaks. The JS
+  resolves these through a probe element, because a canvas cannot
+  parse the light-dark() token stream (the v1 field's lesson).
+*/
+:root {
+  --bgd-1: light-dark(#dce9f8, #0e1a30);
+  --bgd-2: light-dark(#b4cfee, #17335f);
+  --bgd-3: light-dark(#6ea3dd, #2c5ea6);
+  --bgd-4: light-dark(#1e5aa8, #6ea8e1);
+}
+
+/* The field itself: a fixed canvas behind everything, one canvas
+   pixel per 8px cell on the site's grid, scaled up crisp. It takes
+   no input and no layout space. */
+.bg-dither {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+/* The column keeps the solid ground production gives it. The field
+   lives behind and around the column, in the gutters and margins;
+   text never sits on dither. The colour is the same variable body
+   already paints, so the column is indistinguishable from the
+   production page until the field stirs beside it. */
+.page {
+  background: var(--page-background);
+}
