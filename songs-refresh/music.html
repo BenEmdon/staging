@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Music maker · Ben Emdon</title>
+    <meta
+      name="description"
+      content="A small music maker with twenty-nine famous game themes. Each song is text in a tiny music language, drawn as a grid, rendered whole, then looped."
+    />
+    <!-- An experiment, kept unlisted while it is reviewed. -->
+    <meta name="robots" content="noindex" />
+
+    <!-- Sample credits: the sampled voices are short excerpts from
+         VSCO-2 CE (Versilian Studios Community Edition), released
+         CC0, taken from github.com/sgossner/VSCO-2-CE. Sixteen mono
+         MP3s, about 308 KB in total, pitch-shifted in the browser.
+         The chip voices are synthesized from waveforms. No game
+         audio is used anywhere on this page. -->
+
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180" />
+
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#090d16" />
+
+    <!-- The shared chrome (assets/js/chrome.js): one definition of
+         the pieces every page carries. The pre-paint theme read and
+         the GoatCounter config run from its head; the boot screen,
+         both nav rows, the scene controls, the footer, and the keys
+         panel are rendered from it below. A plain script, not a
+         module: it has to be loaded before the body parses. -->
+    <script src="assets/js/chrome.js?v=20261123a"></script>
+
+    <link rel="stylesheet" href="assets/css/fonts.css" />
+
+    <link rel="stylesheet" href="assets/css/tokens.css?v=20261114" />
+    <link rel="stylesheet" href="assets/css/base.css?v=20261122h" />
+    <link rel="stylesheet" href="assets/css/layout.css?v=20261122-lamp" />
+    <link rel="stylesheet" href="assets/css/components.css?v=20261123-bloomstack" />
+    <link rel="stylesheet" href="assets/css/music.css?v=20261123-readonly" />
+    <!-- Visit counting: GoatCounter; the config lives in chrome.js. -->
+    <script
+      data-goatcounter="https://benemdon.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
+  </head>
+
+  <body>
+    <!-- The boot screen, rendered by the shared chrome. -->
+    <script>window.SiteChrome && SiteChrome.boot()</script>
+    <!-- The boot opens early, ahead of the page's module graph:
+         boot.js has no imports, so this small module arrives
+         while the graph is still fetching, and runBoot adopts
+         the screen it raises. The stamp matches the page
+         modules' own import of boot.js, so both load the one
+         module instance. -->
+    <script type="module">
+      import { openBootEarly } from "./assets/js/boot.js?v=20261122s";
+      openBootEarly();
+    </script>
+
+    <main class="page">
+      <p><a class="tag-link" href="/staging/"><span class="tag">experiment</span></a></p>
+      <header>
+                <h1>
+          <span class="sr-only">Music maker</span>
+          <pre class="wordmark" aria-hidden="true">███    ███   ██    ██    ██████    █████    ██████
+████  ████   ██    ██   ██           ██    ██
+██ ████ ██   ██    ██    ██████      ██    ██
+██  ██  ██   ██    ██         ██     ██    ██
+██      ██    ██████     ██████    █████    ██████</pre>
+        </h1>
+      </header>
+
+      <script>window.SiteChrome && SiteChrome.sceneControl(true)</script>
+
+      <!-- The page nav: one shared component (chrome.js), this row
+           and the one above the footer, on every page. -->
+      <script>window.SiteChrome && SiteChrome.nav("top")</script>
+
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <section class="section maker">
+        <h2 class="section__title" id="music-maker"><span class="prompt" aria-hidden="true">$</span> music-maker<a class="anchor" href="#music-maker" aria-label="Link to this section">#</a></h2>
+        <p>
+          A small music maker. Pick a song and press play.
+        </p>
+        <div class="music-transport">
+          <button class="music-btn music-btn--play" type="button" data-play aria-pressed="false">play</button>
+          <span class="music-tempo">
+            <span class="music-tempo__label">tempo</span>
+            <button class="music-btn" type="button" data-tempo="-1" aria-label="Slower">−</button>
+            <span class="music-tempo__value" data-tempo-value>120 bpm</span>
+            <button class="music-btn" type="button" data-tempo="1" aria-label="Faster">+</button>
+          </span>
+        </div>
+        <p class="music-status" data-status aria-live="polite"></p>
+        <div class="music-group music-group--songs">
+          <span class="music-group__label" id="songs-label">songs</span>
+          <div class="songlist" role="group" aria-labelledby="songs-label">
+            <p class="songlist__group">The Legend of Zelda: Ocarina of Time</p>
+            <button class="songrow" type="button" data-song="storms" aria-current="false">
+              <span class="songrow__title">Song of Storms</span>
+              <span class="songrow__meta">N64 · 1998</span>
+            </button>
+            <button class="songrow" type="button" data-song="lullaby" aria-current="false">
+              <span class="songrow__title">Zelda's Lullaby</span>
+              <span class="songrow__meta">N64 · 1998</span>
+            </button>
+            <button class="songrow" type="button" data-song="saria" aria-current="false">
+              <span class="songrow__title">Saria's Song</span>
+              <span class="songrow__meta">N64 · 1998</span>
+            </button>
+            <button class="songrow" type="button" data-song="gerudo" aria-current="false">
+              <span class="songrow__title">Gerudo Valley</span>
+              <span class="songrow__meta">N64 · 1998</span>
+            </button>
+            <button class="songrow" type="button" data-song="title" aria-current="false">
+              <span class="songrow__title">Title Theme</span>
+              <span class="songrow__meta">N64 · 1998</span>
+            </button>
+            <button class="songrow" type="button" data-song="songoftime" aria-current="false">
+              <span class="songrow__title">Song of Time</span>
+              <span class="songrow__meta">N64 · 1998</span>
+            </button>
+            <button class="songrow" type="button" data-song="epona" aria-current="false">
+              <span class="songrow__title">Epona's Song</span>
+              <span class="songrow__meta">N64 · 1998</span>
+            </button>
+            <button class="songrow" type="button" data-song="kokiri" aria-current="false">
+              <span class="songrow__title">Kokiri Forest</span>
+              <span class="songrow__meta">N64 · 1998</span>
+            </button>
+            <p class="songlist__group">The Legend of Zelda: Link's Awakening</p>
+            <button class="songrow" type="button" data-song="windfish" aria-current="false">
+              <span class="songrow__title">Ballad of the Wind Fish</span>
+              <span class="songrow__meta">Game Boy · 1993</span>
+            </button>
+            <button class="songrow" type="button" data-song="taltal" aria-current="false">
+              <span class="songrow__title">Tal Tal Heights</span>
+              <span class="songrow__meta">Game Boy · 1993</span>
+            </button>
+            <p class="songlist__group">The Legend of Zelda: Breath of the Wild</p>
+            <button class="songrow" type="button" data-song="kass" aria-current="false">
+              <span class="songrow__title">Kass's Theme</span>
+              <span class="songrow__meta">Switch · 2017</span>
+            </button>
+            <p class="songlist__group">Pokémon Diamond and Pearl</p>
+            <button class="songrow" type="button" data-song="twinleaf" aria-current="false">
+              <span class="songrow__title">Twinleaf Town</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="route201" aria-current="false">
+              <span class="songrow__title">Route 201</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="jubilife" aria-current="false">
+              <span class="songrow__title">Jubilife City</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="cynthia" aria-current="false">
+              <span class="songrow__title">Battle! (Champion Cynthia)</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="route209" aria-current="false">
+              <span class="songrow__title">Route 209</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="eterna" aria-current="false">
+              <span class="songrow__title">Eterna City</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="canalave" aria-current="false">
+              <span class="songrow__title">Canalave City</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="snowpoint" aria-current="false">
+              <span class="songrow__title">Snowpoint City</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="hearthome" aria-current="false">
+              <span class="songrow__title">Hearthome City</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="pokecenter" aria-current="false">
+              <span class="songrow__title">Pokémon Center</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="wildbattle" aria-current="false">
+              <span class="songrow__title">Battle! (Wild Pokémon)</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="trainerbattle" aria-current="false">
+              <span class="songrow__title">Battle! (Trainer Battle)</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="dialgapalkia" aria-current="false">
+              <span class="songrow__title">Battle! (Dialga / Palkia)</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="lake" aria-current="false">
+              <span class="songrow__title">Lake</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="galactic" aria-current="false">
+              <span class="songrow__title">Battle! (Team Galactic)</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <button class="songrow" type="button" data-song="route216" aria-current="false">
+              <span class="songrow__title">Route 216</span>
+              <span class="songrow__meta">DS · 2006</span>
+            </button>
+            <p class="songlist__group">Pokémon HeartGold and SoulSilver</p>
+            <button class="songrow" type="button" data-song="goldenrod" aria-current="false">
+              <span class="songrow__title">Goldenrod City</span>
+              <span class="songrow__meta">DS · 2009</span>
+            </button>
+            <button class="songrow" type="button" data-song="newbark" aria-current="false">
+              <span class="songrow__title">New Bark Town</span>
+              <span class="songrow__meta">DS · 2009</span>
+            </button>
+          </div>
+        </div>
+        <div class="music-panel">
+          <div data-grid></div>
+        </div>
+        <p class="music-hint">
+          Every channel has its own grid, one under another. Rows
+          are pitches, high at the top. Notes in the same column
+          on one channel sound together, as a chord.
+        </p>
+        <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+        <div class="music-group" data-song-facts hidden>
+          <span class="music-group__label" id="details-label">details</span>
+          <div class="songfacts" role="group" aria-labelledby="details-label">
+            <p class="songfacts__name" data-fact-name></p>
+            <p class="songfacts__meta" data-fact-meta></p>
+            <p class="songfacts__key" data-fact-key></p>
+          </div>
+        </div>
+        <p class="music-status music-status--text" data-text-status aria-live="polite"></p>
+        <div class="music-group music-group--stack">
+          <span class="music-group__label" id="notes-label">notes</span>
+          <textarea
+            class="music-text"
+            data-song-text
+            rows="8"
+            wrap="soft"
+            spellcheck="false"
+            aria-labelledby="notes-label"
+          ></textarea>
+        </div>
+      </section>
+
+      <pre class="divider" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</pre>
+
+      <section class="section music-how">
+        <h2 class="section__title" id="how-it-works"><span class="prompt" aria-hidden="true">$</span> how-it-works<a class="anchor" href="#how-it-works" aria-label="Link to this section">#</a></h2>
+        <p>
+          Every song is written as text, one line per channel, in a
+          tiny music language. The grid and the text are two views
+          of one song.
+        </p>
+        <p>
+          The language is a small subset of MML, the format Japanese
+          home computers used for music. One line per channel,
+          starting with its letter, A to H. Notes are the letters a
+          to g. A # or + after a note sharpens it, a - flattens it.
+          A number sets the length: 1 is a whole note, 2 a half, 4
+          a quarter, 8 an eighth, 16 a sixteenth, and a dot adds
+          half again. r rests. ^ ties the next length onto the note
+          before it.
+        </p>
+        <p>
+          Notes that sound together are written as a chord: braces
+          around the notes, with one length after the closing
+          brace, like {ceg}4. Inside the braces, &lt; and &gt; step
+          the octave for the notes after them in that chord only.
+          A few letters steer the channel instead of playing: o
+          sets the octave and &lt; &gt; step it down or up, l sets
+          the default length for notes with no number of their
+          own, v is volume from 0 to 15, @ picks an instrument
+          from the fixed table below, and t sets the tempo. [ ]
+          plays what is inside again, twice unless a number
+          follows the closing bracket. L marks where the loop
+          restarts, so anything before it plays once, as an intro.
+          A semicolon starts a comment.
+        </p>
+        <pre class="code">@0 pulse 12.5%   @4 triangle    @8  strings
+@1 pulse 25%     @5 noise       @9  cello
+@2 pulse 50%     @6 ocarina     @10 harp
+@3 pulse 75%     @7 flute       @11 piano
+@12 synth lead   @13 soft square</pre>
+        <p>
+          Everything lands on a sixteenth-note grid. That grid is
+          what lets the text and the grid view stay two views of
+          one song, one line per channel with every length spelled
+          out.
+        </p>
+        <pre class="code">A @6 t190 o4 d f >d</pre>
+        <p>
+          That line is the ocarina's opening of Song of Storms:
+          instrument 6, 190 beats a minute, octave 4, then D, F, and
+          the D above.
+        </p>
+        <p>
+          Nothing here is scheduled live. Pressing play renders the
+          whole loop into one stretch of audio, start to finish,
+          and then loops that recording. No timer places notes
+          while the music plays, so a busy page cannot make it
+          stutter. A tempo change renders again and
+          swaps in at the next loop boundary.
+        </p>
+        <p>
+          The rendering path, in three small pictures:
+        </p>
+        <pre class="code">song text, one line per channel
+            |
+            v
+notes on a sixteenth-note grid
+            |
+            v
+each note given a voice
+            |
+            v
+the whole loop rendered ahead
+of time into one recording
+            |
+            v
+playback loops the recording</pre>
+        <p>
+          The text is parsed once into notes on the step grid.
+          Each note is given a voice, and an offline audio
+          context renders the whole loop into a single recording
+          before anything plays. Playback loops that recording
+          between its loop points, so an intro before the L
+          plays once and the rest repeats.
+        </p>
+        <pre class="code">A  piano    ----\
+B  strings  -----\
+C  bass     ------>  one recording
+D  drums    -----/
+E  harp     ----/
+F to H      ----/</pre>
+        <p>
+          Every channel renders into the same recording. There
+          is one recording per song, not one per channel, and
+          nothing is mixed live while the music plays.
+        </p>
+        <pre class="code">a tempo change
+            |
+            v
+the new loop renders
+in the background
+            |
+            v
+at the next loop boundary
+the new recording takes over</pre>
+        <p>
+          Changing the tempo while a song plays does not stop it.
+          The old recording plays on to the boundary, then stops
+          as the new one starts, already inside its loop. While
+          the song is stopped, a tempo change waits for the next
+          press of play.
+        </p>
+        <p>
+          Two families of voices do the playing. The chip voices
+          are the old hardware channels: pulse waves at their real
+          duty cycles, the triangle channel with its stepped 4-bit
+          wave, noise from a shift register, and envelopes that
+          move in steps instead of fading. Two chip voices are
+          newer and break the hardware rule on purpose: the synth
+          lead and the soft square, whose harmonics roll off and
+          pass through a filter, closer to the sampled synths the
+          DS played than to a raw square wave. The sampled voices cover
+          the parts the consoles played from recordings, the N64
+          and the DS both being sample machines: a few recorded
+          notes per instrument, pitch-shifted to reach the rest,
+          with a small generated room echo for the space the
+          consoles added. The samples are short excerpts from
+          VSCO-2 CE, a community orchestra library released CC0.
+          All sixteen files together come to about 308 KB.
+        </p>
+        <p>
+          The grid itself is Ben's idea, from a Swift Playground he
+          wrote as a student: a grid of blocks you toggle while the
+          music plays. This is that idea taught to read text.
+        </p>
+      </section>
+
+      <script>window.SiteChrome && SiteChrome.nav("bottom")</script>
+      <script>window.SiteChrome && SiteChrome.footer()</script>
+    </main>
+
+    <script>window.SiteChrome && SiteChrome.keys([["1","music maker"],["2","how it works"]])</script>
+
+    <script type="module" src="assets/js/music.js?v=20261123-readonly"></script>
+    <script type="module" src="assets/js/keycaps.js"></script>
+  </body>
+</html>
