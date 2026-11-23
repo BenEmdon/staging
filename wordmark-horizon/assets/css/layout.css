@@ -99,11 +99,47 @@
   color: var(--accent-color);
 }
 
-/* The horizon split, an experiment on the home page: a filled cell is
-   the accent itself, the same whole-colour swap as the pool's core.
-   wordmark.js lights whole rows at and below the pointer's row. */
-.wordmark__cell.is-horizon {
-  color: var(--accent-color);
+/* The horizon scene, an experiment on the home page: while the pointer
+   is over the word, wordmark.js lays a small landscape over the whole
+   grid, one class per shade, each a whole-colour swap in place. Every
+   shade is graded twice through light-dark(), dawn in light mode and
+   dusk in dark, from the site's own ramps: the meadow's sky and field
+   slots and the theme scene's sun, the night sides cooled the way the
+   meadow's night palette cools them. */
+.wordmark .is-sky-far {
+  color: light-dark(#f2dfae, #0c1a38);
+}
+
+.wordmark .is-sky-near {
+  color: light-dark(#f7c873, #1e3862);
+}
+
+.wordmark .is-hill {
+  color: light-dark(#7fae72, #16302e);
+}
+
+.wordmark .is-field-far {
+  color: light-dark(#8fbc5e, #2c5741);
+}
+
+.wordmark .is-field-mid {
+  color: light-dark(#5da24e, #214636);
+}
+
+.wordmark .is-field-front {
+  color: light-dark(#3e7f45, #10241c);
+}
+
+.wordmark .is-tuft {
+  color: light-dark(#bcd26c, #3d6b4f);
+}
+
+.wordmark .is-sun-halo {
+  color: light-dark(#f4b942, #8a4a16);
+}
+
+.wordmark .is-sun-core {
+  color: light-dark(#ffcf4d, #ff9e2c);
 }
 
 .tagline {

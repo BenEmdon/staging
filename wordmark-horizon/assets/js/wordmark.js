@@ -324,21 +324,34 @@ export async function animateWordmark(wordmark, reduced) {
   });
 }
 
-// The horizon split: an experiment the home page masthead tries in place
-// of the pool. The pointer's height over the word sets a line, and the
-// word answers by rows. Rows at and below the pointer's row swap to the
-// accent, so the name fills from its baseline up to the pointer like a
-// gauge; rows above stay ink. The fill climbs row by row from the
-// baseline, and inside a row the cells light in Bayer order across the
-// full word, a dithered scatter rather than a wipe. Lowering the pointer
-// drains the band from its top down. The whole word is one instrument:
-// there is no per-letter logic, and the letter gaps fill or drain with
-// their row like every other cell. Two guards keep a parked line from
-// reading as a printing fault: the line snaps to the nearest row
-// boundary (the pointer's row is read off the measured row bands, never
-// a fraction of a row), and the bottom two rows stay filled whenever the
-// pointer is over the word, however low it sits. Cells still only swap
-// whole colours in place, once per 75ms tick.
+// The horizon scene: an experiment the home page masthead tries in
+// place of the pool. The pointer's height over the word sets a horizon
+// line, and the whole grid becomes a small landscape laid over the
+// name: sky above the line in two stepped shades, a far hill band on
+// the line itself, and below it a grassy field stepping darker toward
+// the baseline, its lowest rows carrying clustered grass tufts. A sun
+// rides the line: a small disc of whole cells, bright core with one
+// halo rung, its height set by the pointer's row and its column by the
+// pointer's column, clamped so the disc stays inside the word. Light
+// mode grades the scene as dawn, dark mode as dusk; the composition
+// and the interaction are the same in both.
+//
+// The interaction is the gauge the split first shipped with, unchanged:
+// the line snaps to the nearest row boundary (the pointer's row is
+// read off the measured row bands, never a fraction of a row), and the
+// bottom two rows stay filled whenever the pointer is over the word,
+// however low it sits; they are now the field's front band and the
+// hill above it. Changes step in place on the 75ms tick: positions
+// take their scene shade in the one lighting order (baseline first,
+// Bayer order inside a row, so a band that is still arriving reads as
+// scatter, never a wipe), and positions leaving the scene clear in the
+// reverse order, the top of the picture first. Every grid position
+// takes part, the letter gaps as well as the block cells: a gap in the
+// scene shows the block glyph in the scene's shade, and at rest it is
+// a space again, so leaving returns the plain wordmark exactly. Cells
+// still only swap whole colours in place; nothing fades, nothing
+// drifts, and the sun's cells light and unlight where they sit like
+// every other cell.
 export async function animateWordmarkHorizon(wordmark, reduced) {
   if (!wordmark || !matchMedia("(hover: hover)").matches) return;
   await document.fonts.ready;
@@ -349,9 +362,10 @@ export async function animateWordmarkHorizon(wordmark, reduced) {
   const MIN_FILL = 2;
   splitWordmark(wordmark);
 
-  // Every block cell with its grid position, walked in document order
-  // the same way the pool walks it.
-  const cells = [];
+  // Every grid position with its coordinates, walked in document order
+  // the same way the pool walks it: block cells and gap spans alike,
+  // each carrying the shade it currently shows ("" is rest).
+  const positions = [];
   {
     let x = 0;
     let y = 0;
@@ -360,50 +374,70 @@ export async function animateWordmarkHorizon(wordmark, reduced) {
         y += 1;
         x = 0;
       } else {
-        if (node.classList.contains("wordmark__cell")) {
-          cells.push({ el: node, x, y, lit: false });
-        }
+        positions.push({
+          el: node,
+          x,
+          y,
+          gap: node.classList.contains("wordmark__gap"),
+          shown: "",
+          target: "",
+        });
         x += 1;
       }
     }
   }
-  const rowCount = cells.reduce((max, cell) => Math.max(max, cell.y), 0) + 1;
+  const rowCount = positions.reduce((max, pos) => Math.max(max, pos.y), 0) + 1;
+  const colCount = positions.reduce((max, pos) => Math.max(max, pos.x), 0) + 1;
 
   // The one lighting order for the whole word: the baseline row first,
   // then the row above it, and inside a row the Bayer 4x4 threshold at
-  // the cell's own position, roughened by a fixed hash so equal
+  // the position's own coordinates, roughened by a fixed hash so equal
   // thresholds do not march in lockstep. The same order every hover.
-  // Draining walks it backwards, which takes the top of the band first.
+  // Clearing walks it backwards, which takes the top of the scene
+  // first.
   const BAYER4 = [
     [0, 8, 2, 10],
     [12, 4, 14, 6],
     [3, 11, 1, 9],
     [15, 7, 13, 5],
   ];
-  function bayerKey(cell) {
-    const hash = ((cell.x * 73856093) ^ (cell.y * 19349663)) >>> 0;
-    return BAYER4[cell.y % 4][cell.x % 4] * 1024 + (hash % 1024);
+  function bayerKey(pos) {
+    const hash = ((pos.x * 73856093) ^ (pos.y * 19349663)) >>> 0;
+    return BAYER4[pos.y % 4][pos.x % 4] * 1024 + (hash % 1024);
   }
-  const order = [...cells].sort(
+  const order = [...positions].sort(
     (a, b) => b.y - a.y || bayerKey(a) - bayerKey(b),
   );
 
-  // Row bands, measured from the cells' own boxes: each row's top and
+  // Grass tufts: pairs of neighbouring columns share one hash, so a
+  // tuft is a two-cell cluster, never a lone speckled cell. The hash
+  // is read from its high bits, where the multiplication has mixed
+  // it; the low bits cycle with the column and would plant the tufts
+  // in a regular march.
+  function isTuft(x, y) {
+    const hash = (((x >> 1) * 73856093) ^ (y * 19349663)) >>> 0;
+    return (hash >>> 16) % 4 === 0;
+  }
+
+  // Row bands, measured from the spans' own boxes: each row's top and
   // bottom, relative to the wordmark's origin. The pointer's row is
   // whichever band its height lands in, so the line only ever rests on
-  // a row boundary.
+  // a row boundary. The cell width turns the pointer's x into a
+  // column for the sun.
   const rowTop = new Array(rowCount).fill(Infinity);
   const rowBottom = new Array(rowCount).fill(-Infinity);
+  let cellW = 0;
   function measure() {
     sizeCells(wordmark);
     const origin = wordmark.getBoundingClientRect();
     rowTop.fill(Infinity);
     rowBottom.fill(-Infinity);
-    for (const cell of cells) {
-      const box = cell.el.getBoundingClientRect();
+    for (const pos of positions) {
+      const box = pos.el.getBoundingClientRect();
       const top = box.top - origin.top;
-      rowTop[cell.y] = Math.min(rowTop[cell.y], top);
-      rowBottom[cell.y] = Math.max(rowBottom[cell.y], top + box.height);
+      rowTop[pos.y] = Math.min(rowTop[pos.y], top);
+      rowBottom[pos.y] = Math.max(rowBottom[pos.y], top + box.height);
+      if (!cellW) cellW = box.width;
     }
   }
   measure();
@@ -418,7 +452,7 @@ export async function animateWordmarkHorizon(wordmark, reduced) {
 
   // The pointer target. Events only write this; the tick reads it, so
   // nothing on screen ever changes between ticks.
-  const pointer = { active: false, y: 0 };
+  const pointer = { active: false, y: 0, col: Math.floor(colCount / 2) };
   let tickTimer = 0;
 
   function topRow() {
@@ -426,39 +460,66 @@ export async function animateWordmarkHorizon(wordmark, reduced) {
     return Math.min(rowForHeight(pointer.y), rowCount - MIN_FILL);
   }
 
-  function setLit(cell, lit) {
-    if (cell.lit === lit) return;
-    cell.lit = lit;
-    cell.el.classList.toggle("is-horizon", lit);
+  // The shade one position should show, from the line and the sun.
+  // Above the line, sky: the row touching the line is the near shade,
+  // everything higher the far one. On the line, the hill. Below it,
+  // the field in three bands by distance from the line, the lowest
+  // rows trading their band shade for the tuft shade where the tuft
+  // hash lands. The sun overrides whatever its cells would be: the
+  // disc straddles the line, five cells wide, its middle three the
+  // core and the cells flanking them the halo.
+  function roleFor(pos) {
+    if (!pointer.active) return "";
+    const top = topRow();
+    const dx = Math.abs(pos.x - pointer.col);
+    if (dx <= 2 && (pos.y === top || pos.y === top - 1)) {
+      return dx <= 1 ? "sun-core" : "sun-halo";
+    }
+    if (pos.y < top) return top - pos.y >= 2 ? "sky-far" : "sky-near";
+    if (pos.y === top) return "hill";
+    const below = pos.y - top;
+    if ((below >= 3 || pos.y >= rowCount - 2) && isTuft(pos.x, pos.y)) {
+      return "tuft";
+    }
+    return below === 1 ? "field-far" : below === 2 ? "field-mid" : "field-front";
+  }
+
+  function applyRole(pos, role) {
+    if (pos.shown === role) return;
+    if (pos.shown) pos.el.classList.remove(`is-${pos.shown}`);
+    pos.shown = role;
+    if (role) pos.el.classList.add(`is-${role}`);
+    if (pos.gap) pos.el.textContent = role ? BLOCK_GLYPH : " ";
   }
 
   function clearAll() {
-    for (const cell of cells) setLit(cell, false);
+    for (const pos of positions) applyRole(pos, "");
   }
 
-  // One tick toward the target band: light up to a batch of unlit cells
-  // inside the band, in the lighting order, and unlight up to a batch of
-  // lit cells outside it, walking the order backwards so the top of the
-  // band drains first. When nothing is left to move, the tick stops.
+  // One tick toward the scene the pointer asks for: bring up to a
+  // batch of positions to their scene shade, in the lighting order,
+  // and clear up to a batch of positions whose target is rest, walking
+  // the order backwards so the top of the scene clears first. When
+  // nothing is left to move, the tick stops.
   function tick() {
-    const top = topRow();
+    for (const pos of positions) pos.target = roleFor(pos);
     let moved = 0;
-    for (const cell of order) {
+    for (const pos of order) {
       if (moved >= BATCH) break;
-      if (!cell.lit && cell.y >= top) {
-        setLit(cell, true);
+      if (pos.shown !== pos.target && pos.target !== "") {
+        applyRole(pos, pos.target);
         moved += 1;
       }
     }
     moved = 0;
     for (let i = order.length - 1; i >= 0 && moved < BATCH; i -= 1) {
-      const cell = order[i];
-      if (cell.lit && cell.y < top) {
-        setLit(cell, false);
+      const pos = order[i];
+      if (pos.shown !== pos.target && pos.target === "") {
+        applyRole(pos, "");
         moved += 1;
       }
     }
-    if (!order.some((cell) => cell.lit !== (cell.y >= top))) stopTick();
+    if (!positions.some((pos) => pos.shown !== pos.target)) stopTick();
   }
 
   function startTick() {
@@ -470,16 +531,19 @@ export async function animateWordmarkHorizon(wordmark, reduced) {
     tickTimer = 0;
   }
 
-  // Reduced motion: no gauge, no tick. The band the pointer asks for is
+  // Reduced motion: no stepping. The scene the pointer asks for is
   // simply there, in one cut, and leaving clears it in one cut.
   function applyInstant() {
-    const top = topRow();
-    for (const cell of cells) setLit(cell, cell.y >= top);
+    for (const pos of positions) applyRole(pos, roleFor(pos));
   }
 
   function notePointer(event) {
     const origin = wordmark.getBoundingClientRect();
     pointer.y = event.clientY - origin.top;
+    if (cellW > 0) {
+      const col = Math.floor((event.clientX - origin.left) / cellW);
+      pointer.col = Math.min(Math.max(col, 2), colCount - 3);
+    }
   }
 
   function engage(event) {
@@ -508,8 +572,9 @@ export async function animateWordmarkHorizon(wordmark, reduced) {
     if (event.pointerType !== "touch") release();
   });
 
-  // Touch: a tap fills to the tap's row, a drag up or down moves the
-  // line, and lifting the finger drains the word again.
+  // Touch: a tap sets the line where the finger lands and the sun
+  // follows it, a drag carries both, and lifting the finger clears
+  // the scene again.
   wordmark.addEventListener("pointerdown", (event) => {
     if (event.pointerType !== "touch") return;
     engage(event);
