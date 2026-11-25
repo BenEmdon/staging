@@ -1,0 +1,52 @@
+/* Dialga/Palkia comparison page (staging tool). Uses the site's
+   tokens so it follows the page theme. */
+.cmp { margin: 1.5rem 0 2rem; }
+.cmp h2 { margin-bottom: 0.25rem; }
+.cmp .cmp-intro { color: var(--muted-color); max-width: 44rem; }
+.cmp-ab {
+  border: 1px solid var(--page-rule);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  margin: 1rem 0 1.5rem;
+}
+.cmp-ab h3 { margin: 0 0 0.4rem; }
+.cmp-btns { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.55rem; }
+.cmp-btns button, .cmp-stop {
+  font: inherit;
+  font-size: var(--text-small);
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--page-rule);
+  background: transparent;
+  color: var(--page-color);
+  cursor: pointer;
+}
+.cmp-btns button:hover, .cmp-stop:hover { border-color: var(--accent-color); color: var(--link-color); }
+.cmp-btns button[disabled] { opacity: 0.45; cursor: wait; }
+.cmp-btns button.playing { border-color: var(--accent-color); color: var(--link-color); }
+.cmp-status { font-size: var(--text-small); color: var(--muted-color); min-height: 1.2em; margin-top: 0.4rem; }
+.cmp-legend { font-size: var(--text-small); color: var(--muted-color); margin: 0.5rem 0 0; }
+.cmp-legend .sw { display: inline-block; width: 0.7em; height: 0.7em; border-radius: 2px; margin: 0 0.25em 0 0.8em; vertical-align: baseline; }
+.sw-match { background: #4a86c8; }
+.sw-dur { background: #8a6fc8; }
+.sw-missing { background: #c8504a; }
+.sw-extra { background: #c89240; }
+.cmp-row {
+  border-top: 1px solid var(--page-rule);
+  padding: 1rem 0 1.2rem;
+}
+.cmp-row h3 { margin: 0 0 0.2rem; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.cmp-tag {
+  font-size: var(--text-caption);
+  border: 1px solid var(--accent-color);
+  color: var(--link-color);
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  white-space: nowrap;
+}
+.cmp-names { font-size: var(--text-small); color: var(--muted-color); margin: 0.1rem 0 0.4rem; }
+.cmp-names b { color: var(--page-color); font-weight: 600; }
+.cmp-canvas { width: 100%; height: 96px; display: block; }
+.cmp-counts { font-size: var(--text-small); color: var(--muted-color); margin: 0.35rem 0 0; }
+.cmp-blurb { max-width: 44rem; margin: 0.35rem 0 0; }
+.cmp-stopbar { position: sticky; top: 0.4rem; z-index: 5; margin: 0.6rem 0; }
